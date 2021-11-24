@@ -1,0 +1,9 @@
+{
+  "deno.enable": true,
+  "deno.lint": true,
+  "deno.unstable": false,
+  "deno.suggest.imports.hosts": {
+    "https://deno.land": true
+  },
+  "python.pythonPath": "/usr/local/opt/python@3.10/bin/python3"
+}

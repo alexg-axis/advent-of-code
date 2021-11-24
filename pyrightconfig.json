@@ -1,0 +1,7 @@
+{
+  "extraPaths": ["utils/python"],
+  "exclude": [
+    "**/__pycache__",
+    "node_modules"
+  ],
+}
