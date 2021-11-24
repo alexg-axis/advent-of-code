@@ -7,3 +7,7 @@ login:
 # initialize today's puzzle
 init:
 	./scripts/init.sh
+
+# run today's puzzle
+run:
+	./scripts/run.sh

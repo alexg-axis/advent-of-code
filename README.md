@@ -26,3 +26,5 @@ The structure is generic enough, but built for macOS (although that specific log
 2. To login using a session cookie from the Advent of Code website, run `make login`
 3. To initialize today's puzzle run `make init`
    * To initialize a specific puzzle, run `AOC_YEAR=2020 AOC_MONTH=12 AOC_DAY=24 make init`
+4. To run today's puzzle run `make run`
+    * To run a specific puzzle, run `AOC_YEAR=2020 AOC_MONTH=12 AOC_DAY=24 make run`
