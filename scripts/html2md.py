@@ -37,7 +37,7 @@ class CustomParser(HTMLParser):
         print("__", end="")
       elif tag == "code":
         if self.is_in_tag("pre"):
-          print("```\n")
+          print("```")
         else:
           print("`", end="")
 
