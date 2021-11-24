@@ -30,6 +30,7 @@ for file in $main_files; do
       NO_COLOR=1 deno run --quiet --allow-read "$file"
       ;;
     "py")
+      export PYTHONPATH="$PWD/utils/python/:$PYTHONPATH"
       python3 "$file"
       ;;
     *)
