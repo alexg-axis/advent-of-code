@@ -22,6 +22,7 @@ fi
 main_files="$(find "$year/$day" -depth 1 -iname "main*")"
 for file in $main_files; do
   name="$(basename "$file")"
+  directory="$(dirname "$file")"
   case "${name##*.}" in
     "go")
       go run "$file"
@@ -32,6 +33,10 @@ for file in $main_files; do
     "py")
       export PYTHONPATH="$PWD/utils/python/:$PYTHONPATH"
       python3 "$file"
+      ;;
+    "c")
+      out="$(mktemp --suffix=.main)"
+      gcc -o "$out" "$directory/"*.c utils/c/*.c && "$out"
       ;;
     *)
       echo "unsupported $file"
