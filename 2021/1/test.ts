@@ -1,8 +1,8 @@
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 
-import { solve } from "./solutions.ts";
+import { solvePart1, solvePart2 } from "./solutions.ts";
 
-Deno.test("given test case", () => {
+Deno.test("part 1 - given test case", () => {
   const input = `199
 200
 208
@@ -15,6 +15,24 @@ Deno.test("given test case", () => {
 263`;
 
   const numbers = input.split("\n").map(x => Number(x));
-  const increases = solve(numbers);
+  const increases = solvePart1(numbers);
   assertEquals(increases, 7);
+});
+
+
+Deno.test("part 2 - given test case", () => {
+  const input = `199
+200
+208
+210
+200
+207
+240
+269
+260
+263`;
+
+  const numbers = input.split("\n").map(x => Number(x));
+  const increases = solvePart2(numbers);
+  assertEquals(increases, 5);
 });
