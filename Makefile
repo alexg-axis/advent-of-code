@@ -15,3 +15,7 @@ run:
 # test today's puzzle
 test:
 	./scripts/test.sh
+
+# upload today's solution
+upload:
+	./scripts/upload.sh
