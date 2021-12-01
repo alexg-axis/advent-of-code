@@ -11,3 +11,7 @@ init:
 # run today's puzzle
 run:
 	./scripts/run.sh
+
+# test today's puzzle
+test:
+	./scripts/test.sh
