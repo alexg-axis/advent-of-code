@@ -24,11 +24,14 @@ for solution in $solutions; do
   correct="$(echo "$output" | grep -c "That's the right answer" || true)"
   incorrect="$(echo "$output" | grep -c "That's not the right answer" || true)"
   already_solved="$(echo "$output" | grep -c "You don't seem to be solving the right level" || true)"
+  too_recent="$(echo "$output" | grep -c "You gave an answer too recently" || true)"
   if [[ "$correct" -eq 1 ]] || [[ "$already_solved" -eq 1 ]]; then
     echo "✅ solution $part"
     correct=$((correct+1))
   elif [[ "$incorrect" -eq 1 ]]; then
     echo "❌ solution $part"
+  elif [[ "$too_recent" -eq 1 ]]; then
+    echo "⚠️ solution $part - please try again soon"
   else
     echo "⚠️ solution $part"
     echo "------------"
