@@ -24,6 +24,10 @@ class CustomParser(HTMLParser):
       self.tags: list[tuple[str, HTMLAttributes]] = []
       # Whether or not we're inside the main article
       self.is_in_article = False
+      # The ul depth
+      self.list_depth = 0
+      # Whether the last seen ul was nested
+      self.list_was_nested = False
 
   def handle_starttag(self, tag: str, attrs: HTMLAttributes) -> None:
       self.tags.append((tag, attrs))
@@ -40,6 +44,15 @@ class CustomParser(HTMLParser):
           print("```")
         else:
           print("`", end="")
+      elif tag == "li":
+        print("  " * (self.list_depth - 1) + "- ", end="")
+      elif tag == "ul":
+        self.list_depth += 1
+        if self.list_depth == 1:
+          self.list_was_nested = False
+        elif self.list_depth > 1:
+          self.list_was_nested = True
+          print()
 
   def handle_endtag(self, tag: str) -> None:
       self.tags.pop()
@@ -60,6 +73,16 @@ class CustomParser(HTMLParser):
           print("```\n")
         else:
           print("`", end="")
+      elif tag == "li":
+        print()
+      elif tag == "ul":
+        self.list_depth -= 1
+        # As a nested ul resides within a li tag two newlines will be printed
+        # for the last li. As we don't have a lookahead, best we can do is to
+        # keep track of last seen nested ul and add another newline when we
+        # leave a non-nested ul
+        if not self.list_was_nested and self.list_depth == 0:
+          print()
 
   @property
   def current_tag(self) -> tuple[str, HTMLAttributes] | None:
@@ -91,6 +114,8 @@ class CustomParser(HTMLParser):
     elif tag == "code":
       print(data, end="")
     elif tag == "span":
+      print(data, end="")
+    elif tag == "li":
       print(data, end="")
 
 def main():
