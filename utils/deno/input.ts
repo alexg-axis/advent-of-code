@@ -5,7 +5,7 @@ const directory = path.dirname(path.fromFileUrl(Deno.mainModule));
 const raw = await Deno.readTextFile(path.resolve(directory, "input.txt"))
 
 /** Input represents a puzzle's input. */
-class Input {
+export class Input {
   constructor(public readonly raw: string) {}
 
   /** The lines of the input. Trims trailing whitespace. */
