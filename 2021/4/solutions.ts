@@ -86,3 +86,20 @@ export function solvePart1(order: Order, boards: Board[]): [number, number] {
 
   return [-1, -1];
 }
+
+export function solvePart2(order: Order, boards: Board[]): [number, number] {
+  // Maps in JS are ordered by insert
+  const won = new Map<Board, number>();
+  for (const called of order) {
+    for (const board of boards) {
+      if (!won.has(board)) {
+        markBoard(board, called);
+        if (checkBoard(board))
+          won.set(board, called);
+      }
+    }
+  }
+
+  const [board, called] = Array.from(won.entries()).pop()!;
+  return [unmarkedSum(board), called];
+}
