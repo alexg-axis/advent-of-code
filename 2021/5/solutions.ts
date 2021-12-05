@@ -71,3 +71,25 @@ export function solvePart1(lines: Line[]): number {
 
   return countIntersections(grid);
 }
+
+export function solvePart2(lines: Line[]): number {
+  const [width, height] = gridSize(lines);
+  const grid = newGrid(width, height);
+
+  for (const line of lines) {
+    if (line.x1 === line.x2) {
+      for (let y = Math.min(line.y1, line.y2); y <= Math.max(line.y1, line.y2); y++)
+        grid[y][line.x1]++;
+    } else if (line.y1 === line.y2) {
+      for (let x = Math.min(line.x1, line.x2); x <= Math.max(line.x1, line.x2); x++)
+        grid[line.y1][x]++;
+    } else {
+      const deltaY = line.y1 - line.y2 > 0 ? -1 : 1;
+      const deltaX = line.x1 - line.x2 > 0 ? -1 : 1;
+      for (let i = 0; i <= Math.abs(line.x1 - line.x2); i++)
+        grid[line.y1 + (i * deltaY)][line.x1 + (i * deltaX)]++;
+    }
+  }
+
+  return countIntersections(grid);
+}
