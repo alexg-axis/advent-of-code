@@ -1,6 +1,5 @@
 import input from "../../utils/deno/input.ts";
-import { solvePart1 } from "./solutions.ts";
+import { solvePart1, solvePart2 } from "./solutions.ts";
 
-const numbers = input.raw.trim().split(",").map(Number);
-
-console.log(solvePart1(numbers));
+console.log(solvePart1(input.raw.trim().split(",").map(Number)));
+console.log(solvePart2(input.raw.trim().split(",").map(Number)));
