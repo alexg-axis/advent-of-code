@@ -1,7 +1,7 @@
 import {Input} from "../../utils/deno/input.ts";
 
 type Map = number[][];
-type VisitedMap = { [key: number]: { [key: number]: boolean } };
+type Coordinate = { x: number, y: number };
 
 export function parseInput(input: Input): Map {
   return input.lines.map(line => line.split("").map(Number));
@@ -28,12 +28,17 @@ export function solvePart2(map: Map): number {
         continue;
 
       const [size, visited] = up(map, x, y);
-      console.log(x, y, size, visited);
+
+      // Print basin
+      // console.log(`=== ${x};${y} - ${size} ===`);
+      // for (let y2 = 0; y2 < map.length; y2++) {
+      //   console.log(map[y2].map((v, x2) => isVisited(visited, x2, y2) ? 'x' : v).join(""));
+      // }
+
       basinSizes.push(size);
     }
   }
   const sorted = basinSizes.sort((a, b) => b - a);
-  console.log(sorted);
   return sorted.slice(0, 3).reduce((product, x) => product * x);
 }
 
@@ -45,38 +50,46 @@ function isLow(map: Map, x: number, y: number): boolean {
   return left && right && up && down;
 }
 
-function up(map: Map, x: number, y: number, visited: VisitedMap = {}): [number, VisitedMap] {
-  if (map[y][x] === 9)
-    return [0, visited];
+function up(map: Map, x: number, y: number): [number, Coordinate[]] {
+  const toVisit: Coordinate[] = [];
 
-  let size = 1;
+  toVisit.push({x, y});
 
-  const mark = (x: number, y: number) => {
-    if (!visited[y])
-      visited[y] = {};
-    visited[y][x] = true;
+  let size = 0;
+  const visited: Coordinate[] = [];
+
+  while (toVisit.length > 0) {
+    const {x, y} = toVisit.shift()!;
+    if (isVisited(visited, x, y))
+      continue;
+    if (map[y][x] === 9)
+      continue;
+
+    size++;
+    visited.push({x, y});
+
+    // Left
+    if (x > 0 && map[y][x - 1] < 9)
+      toVisit.push({x: x-1, y});
+    // Right
+    if (x < map[y].length - 1 && map[y][x + 1] < 9)
+      toVisit.push({ x: x + 1, y });
+    // Up
+    if (y > 0 && map[y - 1][x] < 9)
+      toVisit.push({ x, y: y - 1});
+    // Down
+    if (y < map.length - 1 && map[y + 1][x] < 9)
+      toVisit.push({ x, y: y + 1 });
   }
-
-  const isMarked = (x: number, y: number) => {
-    if (!visited[y])
-      return false;
-    return visited[y][x] === true;
-  }
-
-  mark(x, y);
-
-  // Left
-  if (x > 0 && !isMarked(x-1, y) && map[y][x-1] - map[y][x] === 1)
-    size += up(map, x-1, y, visited)[0];
-  // Right
-  if (x < map[y].length - 1 && !isMarked(x+1, y) && map[y][x+1] - map[y][x] === 1)
-    size += up(map, x+1, y, visited)[0];
-  // Up
-  if (y > 0 && !isMarked(x, y-1) && map[y-1][x] - map[y][x] === 1)
-    size += up(map, x, y-1, visited)[0];
-  // Down
-  if (y < map.length - 1 && !isMarked(x, y+1) && map[y+1][x] -map[y][x] === 1)
-    size += up(map, x, y+1, visited)[0];
 
   return [size, visited];
+}
+
+
+function isVisited(visited: Coordinate[], x: number, y: number): boolean {
+  for (const other of visited) {
+    if (other.x === x && other.y === y)
+      return true;
+  }
+  return false;
 }
