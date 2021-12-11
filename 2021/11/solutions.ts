@@ -58,3 +58,54 @@ export function solvePart1(grid: Grid<number>): number {
 
   return flashes;
 }
+
+export function solvePart2(grid: Grid<number>): number {
+  for (let i = 0; true; i++) {
+    // Increase by one
+    grid = grid.map(rows => rows.map(column => column + 1));
+
+    const flashed: Grid<boolean> = grid.map(row => row.map(_ => false));
+
+    // Flash all triggered
+    let shouldContinue = true;
+    while (shouldContinue) {
+      shouldContinue = false;
+
+      for (let y = 0; y < grid.length; y++) {
+        for (let x = 0; x < grid[y].length; x++) {
+          if (grid[y][x] > 9 && !flashed[y][x]) {
+            flashed[y][x] = true;
+
+            for (const [dx, dy] of adjacent) {
+              if (grid[y + dy] !== undefined && grid[y + dy][x + dx] !== undefined) {
+                grid[y + dy][x + dx]++;
+                if (grid[y + dy][x + dx] > 9)
+                  shouldContinue = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // Set all flashed to 0
+    let flashCount = 0;
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[y].length; x++) {
+        if (flashed[y][x]) {
+          grid[y][x] = 0;
+          flashCount++;
+        }
+      }
+    }
+
+    if (flashCount === grid.length * grid[0].length)
+      return i + 1;
+
+    // Print each iteration
+    // console.log(`After step ${i+1}`);
+    // console.log("");
+    // console.log(grid.map(x => x.join("")).join("\n"));
+    // console.log("");
+  }
+}
