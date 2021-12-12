@@ -38,24 +38,35 @@ export function parseInput(input: Input): Graph {
 }
 
 export function solvePart1(graph: Graph): number {
-  const paths = findPaths(graph);
+  const paths = findPaths(graph, []);
   return paths.length;
 }
 
-function findPaths(graph: Graph): string[][] {
-  const visited: boolean[] = new Array(graph.length).fill(false);
+export function solvePart2(graph: Graph): number {
+  const possibleSmall = graph.nodes.filter(x => x.small && x.label !== "start" && x.label !== "end").map(x => x.index);
+  const allPaths = new Set<string>();
+  for (const allowedSmall of possibleSmall) {
+    const paths = findPaths(graph, [allowedSmall]).map(x => x.join(","));
+    for (const path of paths)
+      allPaths.add(path);
+  }
+  return allPaths.size;
+}
+
+function findPaths(graph: Graph, allowedSmall: number[]): string[][] {
+  const visited: number[] = new Array(graph.length).fill(0);
 
   const startIndex = graph.map.indexOf("start");
   const endIndex = graph.map.indexOf("end");
 
   const paths: number[][] = [];
-  recurse(graph, startIndex, endIndex, visited, [], paths);
+  recurse(graph, startIndex, endIndex, visited, [], paths, allowedSmall);
 
   return paths.map(x => x.map(y => graph.map[y]));
 }
 
-function recurse(graph: Graph, startIndex: number, endIndex: number, visited: boolean[], path: number[], paths: number[][]) {
-  visited[startIndex] = true;
+function recurse(graph: Graph, startIndex: number, endIndex: number, visited: number[], path: number[], paths: number[][], allowedSmall: number[]) {
+  visited[startIndex]++;
   path.push(startIndex);
 
   if (startIndex === endIndex) {
@@ -63,13 +74,13 @@ function recurse(graph: Graph, startIndex: number, endIndex: number, visited: bo
   } else {
     for (const adjacent of graph.nodes[startIndex].adjacent) {
       const isSmall = graph.nodes[adjacent].small;
-      const shouldRecurse = (isSmall && !visited[adjacent]) || !isSmall;
+      const shouldRecurse = (isSmall && visited[adjacent] === 0) || (isSmall && visited[adjacent] === 1 && allowedSmall.includes(adjacent)) || !isSmall;
       if (shouldRecurse)
-        recurse(graph, adjacent, endIndex, visited, path, paths);
+        recurse(graph, adjacent, endIndex, visited, path, paths, allowedSmall);
     }
   }
 
-  // Backtrach
+  // Backtrack
   path.pop();
-  visited[startIndex] = false;
+  visited[startIndex]--;
 }
