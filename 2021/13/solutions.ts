@@ -83,3 +83,15 @@ export function solvePart1([paper, folds]: [Paper, Fold[]]): number {
 
   return paper.reduce((marked, lines) => marked + lines.filter(x => x).length, 0);
 }
+
+export function solvePart2([paper, folds]: [Paper, Fold[]]): number {
+  for (const [x, y] of folds) {
+    if (x === 0)
+      foldUp(paper, y);
+    else
+      foldLeft(paper, x);
+  }
+  printPaper(paper);
+
+  return paper.reduce((marked, lines) => marked + lines.filter(x => x).length, 0);
+}
