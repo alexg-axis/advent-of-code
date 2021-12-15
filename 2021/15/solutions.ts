@@ -9,7 +9,7 @@ export function parseInput(input: Input): Map {
   return input.lines.map(x => x.split("").map(Number));
 }
 
-export function solvePart1(input: Map): number {
+function solve(input: Map): number {
   const costs = input.map(x => new Array<number>(x.length).fill(Number.MAX_VALUE));
   const compare = ([ax, ay]: Coordinate, [bx, by]: Coordinate) => costs[ay][ax] - costs[by][bx];
   const queue = new BinaryHeap<Coordinate>(compare);
@@ -49,8 +49,34 @@ export function solvePart1(input: Map): number {
     }
   }
 
-  // Print cost map and path map
+  // Print cost map
   // console.log(costs.map(x => x.map(y => y.toString().padStart(3, " ")).join("")).join("\n"));
 
   return costs[costs.length - 1][costs[0].length - 1];
+}
+
+export function solvePart1(input: Map): number {
+  return solve(input);
+}
+
+export function solvePart2(input: Map): number {
+  const height = input.length;
+  const width = input[0].length;
+  const tiledInput: Map = [];
+
+  for (let y = 0; y < height * 5; y++) {
+    const originY = y % height;
+    const tileY = Math.floor(y / height);
+    tiledInput[y] = [];
+    for (let x = 0; x < width * 5; x++) {
+      const originX = x % width;
+      const tileX = Math.floor(x / width);
+      let value = input[originY][originX] + tileX + tileY;
+      value += Math.floor(value / 10);
+      value = Math.max(1, value % 10);
+      tiledInput[y][x] = value;
+    }
+  }
+
+  return solve(tiledInput);
 }
