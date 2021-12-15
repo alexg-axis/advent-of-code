@@ -15,7 +15,6 @@ export function solvePart1(input: Map): number {
   const queue = new BinaryHeap<Coordinate>(compare);
 
   const visited = input.map(x => new Array<boolean>(x.length).fill(false));
-  const parents: Coordinate[][] = input.map(x => new Array<Coordinate>(x.length).map(_ => [-1, -1]));
 
   queue.push([0, 0]);
   costs[0][0] = 0;
@@ -44,7 +43,6 @@ export function solvePart1(input: Map): number {
       const newCost = costs[row][column] + input[newRow][newColumn];
       if (newCost < costs[newRow][newColumn]) {
         costs[newRow][newColumn] = newCost;
-        parents[newRow][newColumn] = [column, row];
       }
 
       queue.push([newColumn, newRow]);
@@ -53,7 +51,6 @@ export function solvePart1(input: Map): number {
 
   // Print cost map and path map
   // console.log(costs.map(x => x.map(y => y.toString().padStart(3, " ")).join("")).join("\n"));
-  // console.log(parents.map(x => x.map(y => y.toString().padStart(5, " ")).join("")).join("\n"));
 
   return costs[costs.length - 1][costs[0].length - 1];
 }
