@@ -87,3 +87,50 @@ export function solvePart1(input: Input): number {
 
   return versionSum;
 }
+
+function calculate(packet: Packet): number {
+  switch (packet.typeId) {
+    case 0: {
+      const packets = packet.payload as Packet[];
+      return packets.map(x => calculate(x)).reduce((sum, x) => sum + x);
+    }
+    case 1: {
+      const packets = packet.payload as Packet[];
+      return packets.map(x => calculate(x)).reduce((product, x) => product * x);
+    }
+    case 2: {
+      const packets = packet.payload as Packet[];
+      return Math.min(...packets.map(x => calculate(x)));
+    }
+    case 3: {
+      const packets = packet.payload as Packet[];
+      return Math.max(...packets.map(x => calculate(x)));
+    }
+    case 4: {
+      return packet.payload as number;
+    }
+    case 5: {
+      const packets = packet.payload as Packet[];
+      const values = packets.map(x => calculate(x));
+      return values[0] > values[1] ? 1 : 0;
+    }
+    case 6: {
+      const packets = packet.payload as Packet[];
+      const values = packets.map(x => calculate(x));
+      return values[0] < values[1] ? 1 : 0;
+    }
+    case 7: {
+      const packets = packet.payload as Packet[];
+      const values = packets.map(x => calculate(x));
+      return values[0] === values[1] ? 1 : 0;
+    }
+    default:
+      return -1;
+  }
+}
+
+export function solvePart2(input: Input): number {
+  const bits = input.raw.trim().split("").map(x => Number.parseInt(x, 16)).map(x => x.toString(2).padStart(4, "0")).join("");
+  const packet = parsePacket(bits, 0);
+  return calculate(packet);
+}
