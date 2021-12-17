@@ -23,8 +23,8 @@ export function solvePart1(input: Target): number {
   // Positive is up
   let maxHeight = 0;
 
-  for (let velocityX = 0; velocityX < 100; velocityX++) {
-    for (let velocityY = -500; velocityY < 500; velocityY++) {
+  for (let velocityX = 0; velocityX < input.maxX; velocityX++) {
+    for (let velocityY = input.minY; velocityY < 500; velocityY++) {
       const [positions, valid] = simulateForwards(input, [velocityX, velocityY], 500);
       if (valid) {
         const max = positions.map(x => x[1]).sort((a, b) => b - a)[0];
@@ -35,6 +35,21 @@ export function solvePart1(input: Target): number {
   }
 
   return maxHeight;
+}
+
+export function solvePart2(input: Target): number {
+  // Positive is up
+  let validCount = 0;
+
+  for (let velocityX = 0; velocityX <= input.maxX; velocityX++) {
+    for (let velocityY = input.minY; velocityY < 500; velocityY++) {
+      const [_, valid] = simulateForwards(input, [velocityX, velocityY], 500);
+      if (valid)
+        validCount++;
+    }
+  }
+
+  return validCount;
 }
 
 function simulateForwards(target: Target, [initialVelocityX, initialVelocityY]: Tuple, steps: number): [Tuple[], boolean] {
@@ -58,6 +73,10 @@ function simulateForwards(target: Target, [initialVelocityX, initialVelocityY]: 
     positions.push([x, y]);
     if (x >= target.minX && x <= target.maxX && y >= target.minY && y <= target.maxY)
       return [positions, true];
+
+    // A probe cannot change direction when past the target
+    if (x > target.maxX || y < target.minY)
+      return [positions, false];
   }
 
   return [positions, false];
