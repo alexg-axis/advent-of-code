@@ -46,7 +46,7 @@ export function sum(a: Map, b: Map): Map {
 }
 
 export function reduce(x: Map) {
-  while (explode(x) || split(x));
+  while ((explode(x) || split(x)));
 }
 
 export function explode(x: Map): boolean {
@@ -142,4 +142,19 @@ export function solvePart1(input: Map[]): number {
   const finalSum = sumReduce(input);
   // console.log(formatMap(finalSum));
   return magnitude(JSON.parse(formatMap(finalSum)) as Pair);
+}
+
+export function solvePart2(input: Map[]): number {
+  let maxMagnitude = 0;
+  for (let i = 0; i < input.length; i++) {
+    for (let j = 0; j < input.length; j++) {
+      if (i === j)
+        continue;
+      const magnitude = solvePart1(JSON.parse(JSON.stringify([input[i], input[j]])));
+      if (magnitude > maxMagnitude)
+        maxMagnitude = magnitude;
+    }
+  }
+
+  return maxMagnitude
 }
