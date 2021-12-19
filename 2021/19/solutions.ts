@@ -92,10 +92,10 @@ function align(fixed: Vector3[], vectors: Vector3[]): [Vector3[], Vector3, numbe
 }
 
 export function solvePart1(input: Vector3[][]): number {
-  // i - 1 is fixed, meaning scanner 0 is fixed right from the start, but others
-  // are fixed first after they've been matched with the previous scanner
-
+  // The first sensor is fixed, meaning it will constitute the source truth
+  // regarding the coordinate system
   const fixed = input[0];
+  // Iteratively try to align each sensor to some known good pointes from fixed
   const sensorsToAlign = input.slice(1);
   while (sensorsToAlign.length > 0) {
     const sensor = sensorsToAlign.shift()!;
@@ -115,18 +115,18 @@ export function solvePart1(input: Vector3[][]): number {
 }
 
 export function solvePart2(input: Vector3[][]): number {
-  // i - 1 is fixed, meaning scanner 0 is fixed right from the start, but others
-  // are fixed first after they've been matched with the previous scanner
-
+  // Map each input vector to its originating sensor
   input = input.map((x, i) => x.map(y => ({...y, sensor: i})));
 
   const fixed = input[0];
+  // Solved coordinates. All zero untill solved
   const coordinates: Vector3[] = input.map(_ => ({x: 0, y: 0, z: 0}));
   const sensorsToAlign = input.slice(1);
   while (sensorsToAlign.length > 0) {
     const sensor = sensorsToAlign.shift()!;
     const result = align(fixed, sensor);
     if (result) {
+      // Add the solved offset to the sensor it matched to
       const [aligned, offset] = result;
       coordinates[sensor[0].sensor!] = add(coordinates[0!], offset);
       fixed.push(...aligned);
