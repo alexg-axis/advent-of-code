@@ -62,6 +62,8 @@ function solve(steps: RebootStep[]): number {
 
       intersections.push({ on: !other.on, cube: intersection });
     }
+    // Don't add "off cubes" as they will already have been subtracted from any
+    // intersection in the above step
     if (on)
       intersections.push({ on, cube });
   }
