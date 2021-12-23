@@ -117,3 +117,4 @@ Finally, the last Amber amphipod moves into its room, using `8` energy:
 ```
 
 __What is the least energy required to organize the amphipods?__
+
