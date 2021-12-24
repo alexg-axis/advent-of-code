@@ -19,13 +19,13 @@ type Variable = keyof State;
 type InputFunction = () => number;
 
 export function parseInput(input: Input): Instruction[] {
-  // on x=-48..-2,y=-16..31,z=-3..41
   return input.lines.map(x => {
     const parts = x.split(" ");
     return {instruction: parts[0], operands: parts.slice(1)};
   });
 }
 
+// run is an implementation of the ALU used to proof check the reversed code
 function run(instructions: Instruction[], input: number[]): State {
   const state: State = {x: 0, y: 0, z: 0, w: 0};
 
@@ -98,8 +98,11 @@ function step(z: number, w: number, i: number): number {
   }
 
   /*
-  // To undo the push, we must consider the offsets as well
-  // + ySum of left + xSum of right
+  // Each unconditional push is w of some index + ySum of that index
+  // The unconditional pop adds xSum of that index, meaning that the pop must also
+  // add w of the originally pushed index and its ySum:
+  // As previously shown, x === w <=> w must undo the push
+  // input when pushed + ySum of left + xSum of right = input when popped
   w0 + 5 - 12 = w7
   w1 + 9 - 9 = w6
   w2 + 4 - 12= w3
@@ -149,7 +152,6 @@ function printAsJavaScript(instructions: Instruction[]) {
 export function solvePart1(): number {
   for (const w of permutationsWithReplacement([9, 8, 7, 6, 5, 4, 3, 2, 1], 7)) {
     /*
-    // + ySum of left + xSum of right
     0 w0 + 5 - 12 = w7
     1 w1 + 9 - 9 = w6
     2 w2 + 4 - 12= w3
