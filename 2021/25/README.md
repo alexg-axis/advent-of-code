@@ -295,3 +295,28 @@ In this example, the sea cucumbers stop moving after `58` steps.
 
 Find somewhere safe to land your submarine. __What is the first step on which no sea cucumbers move?__
 
+## --- Part Two ---
+
+Suddenly, the experimental antenna control console lights up:
+
+```
+Sleigh keys detected!```
+
+According to the console, the keys are __directly under the submarine__. You landed right on them! Using a robotic arm on the submarine, you move the sleigh keys into the airlock.
+
+Now, you just need to get them to Santa in time to save Christmas! You check your clock - it __is__ Christmas. There's no way you can get them back to the surface in time.
+
+Just as you start to lose hope, you notice a button on the sleigh keys: __remote start__. You can start the sleigh from the bottom of the ocean! You just need some way to __boost the signal__ from the keys so it actually reaches the sleigh. Good thing the submarine has that experimental antenna! You'll definitely need __50 stars__ to boost it that far, though.
+
+The experimental antenna control console lights up again:
+
+```
+Energy source detected.
+Integrating energy source from device "sleigh keys"...done.
+Installing device drivers...done.
+Recalibrating experimental antenna...done.
+Boost strength due to matching signal phase: 1 star
+```
+
+Only __49 stars__ to go.
+
