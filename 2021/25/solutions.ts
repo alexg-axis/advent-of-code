@@ -1,5 +1,3 @@
-import { permutationsWithReplacement } from "https://deno.land/x/combinatorics/mod.ts";
-
 import { Input } from "../../utils/deno/input.ts";
 
 type Map = Cell[][];
