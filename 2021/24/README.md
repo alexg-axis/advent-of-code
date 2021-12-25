@@ -19,7 +19,7 @@ In all of these instructions, `a` and `b` are placeholders; `a` will always be t
 
 The ALU has no __jump__ instructions; in an ALU program, every instruction is run exactly once in order from top to bottom. The program halts after the last instruction has finished executing.
 
-(Program authors should be especially cautious; attempting to execute `div` with `b=0` or attempting to execute `mod` with `a<0` or `b<=0`  will cause the program to crash and might even damage the ALU. These operations are never intended in any serious ALU program.)
+(Program authors should be especially cautious; attempting to execute `div` with `b=0` or attempting to execute `mod` with `a<0` or `b<=0`  will cause the program to crash and might even damage the ALU (_Maybe this is what happened to the last one._). These operations are never intended in any serious ALU program.)
 
 For example, here is an ALU program which takes an input number, negates it, and stores it in `x`:
 

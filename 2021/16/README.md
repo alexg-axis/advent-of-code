@@ -2,7 +2,7 @@
 
 As you leave the cave and reach open waters, you receive a transmission from the Elves back on the ship.
 
-The transmission was sent using the Buoyancy Interchange Transmission System (BITS), a method of packing numeric expressions into a binary sequence. Your submarine's computer has saved the transmission in [hexadecimal](https://en.wikipedia.org/wiki/Hexadecimal) (your puzzle input).
+The transmission was sent using the Buoyancy Interchange Transmission System (BITS (_Just be glad it wasn't sent using the BuoyancY Transmission Encoding System._)), a method of packing numeric expressions into a binary sequence. Your submarine's computer has saved the transmission in [hexadecimal](https://en.wikipedia.org/wiki/Hexadecimal) (your puzzle input).
 
 The first step of decoding the message is to convert the hexadecimal representation into binary. Each character of hexadecimal corresponds to four bits of binary data:
 

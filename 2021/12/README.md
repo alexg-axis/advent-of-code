@@ -1,6 +1,6 @@
 ## --- Day 12: Passage Pathing ---
 
-With your submarine's subterranean subsystems subsisting suboptimally, the only way you're getting out of this cave anytime soon is by finding a path yourself. Not just __a__ path - the only way to know if you've found the __best__ path is to find __all__ of them.
+With your submarine's subterranean subsystems subsisting suboptimally (_Sublime._), the only way you're getting out of this cave anytime soon is by finding a path yourself. Not just __a__ path - the only way to know if you've found the __best__ path is to find __all__ of them.
 
 Fortunately, the sensors are still mostly working, and so you build a rough map of the remaining caves (your puzzle input). For example:
 

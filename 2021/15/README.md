@@ -17,7 +17,7 @@ The cavern is large, but has a very low ceiling, restricting your motion to two 
 2311944581
 ```
 
-You start in the top left position, your destination is the bottom right position, and you cannot move diagonally. The number at each position is its __risk level__; to determine the total risk of an entire path, add up the risk levels of each position you __enter__ (that is, don't count the risk level of your starting position unless you enter it; leaving it adds no risk to your total).
+You start in the top left position, your destination is the bottom right position, and you cannot move diagonally (_Can't go diagonal until we can repair the caterpillar unit. Could be the liquid helium or the superconductors._). The number at each position is its __risk level__; to determine the total risk of an entire path, add up the risk levels of each position you __enter__ (that is, don't count the risk level of your starting position unless you enter it; leaving it adds no risk to your total).
 
 Your goal is to find a path with the __lowest total risk__. In this example, a path with the lowest total risk is highlighted here:
 

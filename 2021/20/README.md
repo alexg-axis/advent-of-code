@@ -118,7 +118,7 @@ Start with the original input image and apply the image enhancement algorithm tw
 
 ## --- Part Two ---
 
-You still can't quite make out the details in the image. Maybe you just didn't [enhance](https://en.wikipedia.org/wiki/Kernel_(image_processing)) it enough.
+You still can't quite make out the details in the image. Maybe you just didn't [enhance](https://en.wikipedia.org/wiki/Kernel_(image_processing)) it enough (_Yeah, that's definitely the problem._).
 
 If you enhance the starting input image in the above example a total of __50__ times, `3351` pixels are lit in the final output image.
 

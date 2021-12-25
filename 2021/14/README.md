@@ -2,7 +2,9 @@
 
 The incredible pressures at this depth are starting to put a strain on your submarine. The submarine has [polymerization](https://en.wikipedia.org/wiki/Polymerization) equipment that would produce suitable materials to reinforce the submarine, and the nearby volcanically-active caves should even have the necessary input elements in sufficient quantities.
 
-The submarine manual contains instructions for finding the optimal polymer formula; specifically, it offers a __polymer template__ and a list of __pair insertion__ rules (your puzzle input). You just need to work out what polymer would result after repeating the pair insertion process a few times.
+The submarine manual contains instructions (_HO
+
+HO -> OH_) for finding the optimal polymer formula; specifically, it offers a __polymer template__ and a list of __pair insertion__ rules (your puzzle input). You just need to work out what polymer would result after repeating the pair insertion process a few times.
 
 For example:
 
@@ -62,3 +64,4 @@ The resulting polymer isn't nearly strong enough to reinforce the submarine. You
 In the above example, the most common element is `B` (occurring `2192039569602` times) and the least common element is `H` (occurring `3849876073` times); subtracting these produces `2188189693529`.
 
 Apply __40__ steps of pair insertion to the polymer template and find the most and least common elements in the result. __What do you get if you take the quantity of the most common element and subtract the quantity of the least common element?__
+

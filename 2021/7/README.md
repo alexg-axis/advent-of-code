@@ -38,7 +38,7 @@ Determine the horizontal position that the crabs can align to using the least fu
 
 The crabs don't seem interested in your proposed solution. Perhaps you misunderstand crab engineering?
 
-As it turns out, crab submarine engines don't burn fuel at a constant rate. Instead, each change of 1 step in horizontal position costs 1 more unit of fuel than the last: the first step costs `1`, the second step costs `2`, the third step costs `3`, and so on.
+As it turns out, crab submarine engines don't burn fuel at a constant rate (_This appears to be due to the modial interaction of magneto-reluctance and capacitive duractance._). Instead, each change of 1 step in horizontal position costs 1 more unit of fuel than the last: the first step costs `1`, the second step costs `2`, the third step costs `3`, and so on.
 
 As each crab moves, moving further becomes more expensive. This changes the best horizontal position to align them all on; in the example above, this becomes `5`:
 

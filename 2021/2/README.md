@@ -1,6 +1,6 @@
 ## --- Day 2: Dive! ---
 
-Now, you need to figure out how to pilot this thing.
+Now, you need to figure out how to pilot this thing (_Tank, I need a pilot program for a B212 helicopter._).
 
 It seems like the submarine can take a series of commands like `forward 1`, `down 2`, or `up 3`:
 

@@ -1,6 +1,6 @@
 ## --- Day 18: Snailfish ---
 
-You descend into the ocean trench and encounter some [snailfish](https://en.wikipedia.org/wiki/Snailfish). They say they saw the sleigh keys! They'll even tell you which direction the keys went if you help one of the smaller snailfish with his __math homework__.
+You descend into the ocean trench and encounter some [snailfish](https://en.wikipedia.org/wiki/Snailfish). They say they saw the sleigh keys! They'll even tell you which direction the keys went if you help one of the smaller snailfish with his __math (_Snailfish math is snailfish math!_) homework__.
 
 Snailfish numbers aren't like regular numbers. Instead, every snailfish number is a __pair__ - an ordered list of two elements. Each element of the pair can be either a regular number or another pair.
 

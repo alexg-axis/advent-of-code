@@ -302,7 +302,7 @@ Suddenly, the experimental antenna control console lights up:
 ```
 Sleigh keys detected!```
 
-According to the console, the keys are __directly under the submarine__. You landed right on them! Using a robotic arm on the submarine, you move the sleigh keys into the airlock.
+According to the console, the keys are __directly under the submarine__. You landed (_Thanks to the deep-sea marine biologist, who apparently works at the Biham-Middleton-Levine oceanic research institute._) right on them! Using a robotic arm on the submarine, you move the sleigh keys into the airlock.
 
 Now, you just need to get them to Santa in time to save Christmas! You check your clock - it __is__ Christmas. There's no way you can get them back to the surface in time.
 

@@ -1,6 +1,6 @@
 ## --- Day 21: Dirac Dice ---
 
-There's not much to do as you slowly descend to the bottom of the ocean. The submarine computer challenges you to a nice game of __Dirac Dice__.
+There's not much to do as you slowly descend to the bottom of the ocean. The submarine computer challenges you to a nice game (_A STRANGE GAME._) of __Dirac Dice__.
 
 This game consists of a single [die](https://en.wikipedia.org/wiki/Dice), two [pawns](https://en.wikipedia.org/wiki/Glossary_of_board_games#piece), and a game board with a circular track containing ten spaces marked `1` through `10` clockwise. Each player's __starting space__ is chosen randomly (your puzzle input). Player 1 goes first.
 

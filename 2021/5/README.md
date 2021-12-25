@@ -2,7 +2,7 @@
 
 You come across a field of [hydrothermal vents](https://en.wikipedia.org/wiki/Hydrothermal_vent) on the ocean floor! These vents constantly produce large, opaque clouds, so it would be best to avoid them if possible.
 
-They tend to form in __lines__; the submarine helpfully produces a list of nearby lines of vents (your puzzle input) for you to review. For example:
+They tend to form in __lines__; the submarine helpfully produces a list of nearby lines of vents (_Maybe they're Bresenham vents._) (your puzzle input) for you to review. For example:
 
 ```
 0,9 -> 5,9

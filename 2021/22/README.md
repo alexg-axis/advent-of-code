@@ -184,7 +184,7 @@ on x=-53470..21291,y=-120233..-33476,z=-44150..38147
 off x=-93533..-4276,y=-16170..68771,z=-104985..-24507
 ```
 
-After running the above reboot steps, `2758514936282235` cubes are __on__. (Just for fun, `474140` of those are also in the initialization procedure region.)
+After running the above reboot steps, `2758514936282235` cubes are __on__. (Just for fun (_Well, *I* think it's fun._), `474140` of those are also in the initialization procedure region.)
 
 Starting again with all cubes __off__, execute all reboot steps. Afterward, considering all cubes, __how many cubes are on?__
 

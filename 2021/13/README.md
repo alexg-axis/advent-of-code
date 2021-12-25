@@ -125,7 +125,7 @@ __How many dots are visible after completing just the first fold instruction on 
 
 ## --- Part Two ---
 
-Finish folding the transparent paper according to the instructions. The manual says the code is always __eight capital letters__.
+Finish folding (_How can you fold it that many times? You tell me, I'm not the one folding it._) the transparent paper according to the instructions. The manual says the code is always __eight capital letters__.
 
 __What code do you use to activate the infrared thermal imaging camera system?__
 

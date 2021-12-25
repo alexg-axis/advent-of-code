@@ -3,7 +3,7 @@
 You ask the submarine to determine the best route out of the deep-sea cave, but it only replies:
 
 ```
-Syntax error in navigation subsystem on line: all of them```
+Syntax error in navigation subsystem on line: all of them (_Some days, that's just how it is._)```
 
 __All of them?!__ The damage is worse than you thought. You bring up a copy of the navigation subsystem (your puzzle input).
 

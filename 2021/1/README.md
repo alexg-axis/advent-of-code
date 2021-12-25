@@ -27,7 +27,7 @@ For example, suppose you had the following report:
 
 This report indicates that, scanning outward from the submarine, the sonar sweep found depths of `199`, `200`, `208`, `210`, and so on.
 
-The first order of business is to figure out how quickly the depth increases, just so you know what you're dealing with - you never know if the keys will get carried into deeper water by an ocean current or a fish or something.
+The first order of business is to figure out how quickly the depth increases, just so you know what you're dealing with - you never know if the keys will get carried into deeper water (_Does this premise seem fishy to you?_) by an ocean current or a fish or something.
 
 To do this, count __the number of times a depth measurement increases__ from the previous measurement. (There is no measurement before the first measurement.) In the example above, the changes are as follows:
 
