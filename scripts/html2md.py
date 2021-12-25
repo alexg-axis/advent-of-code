@@ -55,7 +55,7 @@ class CustomParser(HTMLParser):
           print()
 
   def handle_endtag(self, tag: str) -> None:
-      self.tags.pop()
+      _, attrs = self.tags.pop()
 
       # Naively believe only one article exists
       if tag == "article":
@@ -83,6 +83,10 @@ class CustomParser(HTMLParser):
         # leave a non-nested ul
         if not self.list_was_nested and self.list_depth == 0:
           print()
+      elif tag == "span":
+        title = attr(attrs, "title")
+        if title is not None:
+          print(f" (_{title}_)", end="")
 
   @property
   def current_tag(self) -> tuple[str, HTMLAttributes] | None:
