@@ -1,3 +1,5 @@
+# Simple enough to do quickly by hand
+
 #############
 #...........#
 ###D#A#D#C###
