@@ -4,7 +4,7 @@ set -e
 
 year="${AOC_YEAR:-$(date +%Y)}"
 month="${AOC_MONTH:-$(date +%m)}"
-day="${AOC_DAY:-$(date +%-d)}"
+day="${AOC_DAY:-$(date +%-02d)}"
 
 if [[ ! "$month" -eq 12 ]]; then
   echo "It's not december quite yet. If you wish to access previous events"
@@ -20,6 +20,7 @@ solutions="$(./scripts/run.sh | head -n 2 | xargs)"
 part=1
 correct=0
 for solution in $solutions; do
+  day="$(echo "$day" | sed 's/^0//')"
   output="$(curl -X POST -H 'Content-Type: application/x-www-form-urlencoded' -H "Referer: https://adventofcode.com/$year/day/$day" --data "level=$part&answer=$solution" --silent --cookie "session=$session_cookie" "https://adventofcode.com/$year/day/$day/answer")"
   correct="$(echo "$output" | grep -c "That's the right answer" || true)"
   incorrect="$(echo "$output" | grep -c "That's not the right answer" || true)"
