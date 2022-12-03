@@ -25,11 +25,12 @@ for file in $main_files; do
   directory="$(dirname "$file")"
   pushd "$directory"
   case "${name##*.}" in
-    "ts")
-      NO_COLOR=1 deno test --quiet --allow-read
-      ;;
-    *)
-      echo "unsupported $file"
+  "ts")
+    NO_COLOR=1 deno test --allow-read
+    ;;
+  *)
+    echo "unsupported $file"
+    ;;
   esac
   popd
 done

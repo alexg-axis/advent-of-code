@@ -28,7 +28,7 @@ for solution in $solutions; do
   too_recent="$(echo "$output" | grep -c "You gave an answer too recently" || true)"
   if [[ "$correct" -eq 1 ]] || [[ "$already_solved" -eq 1 ]]; then
     echo "✅ solution $part"
-    correct=$((correct+1))
+    correct=$((correct + 1))
   elif [[ "$incorrect" -eq 1 ]]; then
     echo "❌ solution $part"
   elif [[ "$too_recent" -eq 1 ]]; then
@@ -39,7 +39,7 @@ for solution in $solutions; do
     echo "$output"
     echo "------------"
   fi
-  part=$((part+1))
+  part=$((part + 1))
 done
 
 echo ""

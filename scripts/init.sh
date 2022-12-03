@@ -18,7 +18,7 @@ mkdir -p "$year/$padded_day"
 
 export PATH="/usr/local/opt/python@3.10/bin:$PATH"
 session_cookie="$(security find-generic-password -w -a "com.adventofcode.SessionCookie")"
-curl --silent --cookie "session=$session_cookie" "https://adventofcode.com/$year/day/$day" | ./scripts/html2md.py > "$year/$padded_day/README.md"
-curl --silent --cookie "session=$session_cookie" "https://adventofcode.com/$year/day/$day/input" > "$year/$padded_day/input.txt"
+curl --silent --cookie "session=$session_cookie" "https://adventofcode.com/$year/day/$day" | ./scripts/html2md.py >"$year/$padded_day/README.md"
+curl --silent --cookie "session=$session_cookie" "https://adventofcode.com/$year/day/$day/input" >"$year/$padded_day/input.txt"
 
 echo "$day/12 $year initialized successfully in ./$year/$padded_day" >&2

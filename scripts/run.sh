@@ -24,21 +24,22 @@ for file in $main_files; do
   name="$(basename "$file")"
   directory="$(dirname "$file")"
   case "${name##*.}" in
-    "go")
-      go run "$file"
-      ;;
-    "ts")
-      NO_COLOR=1 deno run --quiet --allow-read "$file"
-      ;;
-    "py")
-      export PYTHONPATH="$PWD/utils/python/:$PYTHONPATH"
-      python3 "$file"
-      ;;
-    "c")
-      out="$(mktemp --suffix=.main)"
-      gcc -o "$out" "$directory/"*.c utils/c/*.c && "$out"
-      ;;
-    *)
-      echo "unsupported $file"
+  "go")
+    go run "$file"
+    ;;
+  "ts")
+    NO_COLOR=1 deno run --quiet --allow-read "$file"
+    ;;
+  "py")
+    export PYTHONPATH="$PWD/utils/python/:$PYTHONPATH"
+    python3 "$file"
+    ;;
+  "c")
+    out="$(mktemp --suffix=.main)"
+    gcc -o "$out" "$directory/"*.c utils/c/*.c && "$out"
+    ;;
+  *)
+    echo "unsupported $file"
+    ;;
   esac
 done
