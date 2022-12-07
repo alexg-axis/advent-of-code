@@ -57,9 +57,7 @@ function parseCommandOutput(input: Input): Record<string, Directory> {
   return directoryTree;
 }
 
-export function solvePart1(input: Input): number {
-  const directoryTree = parseCommandOutput(input);
-
+function calculateSizes(directoryTree: Record<string, Directory>) {
   // Loop through the directories based on their depth
   const directories = Object.keys(directoryTree).sort(
     (a, b) => b.length - a.length
@@ -69,13 +67,44 @@ export function solvePart1(input: Input): number {
       .map((x) =>
         x.type === "regularFile"
           ? x.size
-          : directoryTree[directory + "/" + x.name]?.size || 0
+          : (directory === "/"
+              ? directoryTree[directory + x.name]
+              : directoryTree[directory + "/" + x.name]
+            ).size
       )
       .reduce(sum);
   }
+}
+
+export function solvePart1(input: Input): number {
+  const directoryTree = parseCommandOutput(input);
+  calculateSizes(directoryTree);
 
   return Object.values(directoryTree)
     .filter((x) => x.size <= 100000)
     .map((x) => x.size)
     .reduce(sum);
+}
+
+export function solvePart2(input: Input): number {
+  const directoryTree = parseCommandOutput(input);
+  calculateSizes(directoryTree);
+
+  const totalDisk = 70000000;
+  const requiredFreeDisk = 30000000;
+  const usedDisk = directoryTree["/"].size;
+  const freeDisk = totalDisk - usedDisk;
+  const diskToFree = requiredFreeDisk - freeDisk;
+
+  // Try the directories in ascending order based on their total size
+  const directories = Object.keys(directoryTree).sort(
+    (a, b) => directoryTree[a].size - directoryTree[b].size
+  );
+  for (const directory of directories) {
+    const size = directoryTree[directory].size;
+    if (size >= diskToFree) {
+      return size;
+    }
+  }
+  return -1;
 }
