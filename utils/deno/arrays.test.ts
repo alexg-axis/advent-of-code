@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
-import { chunks, sum } from "./arrays.ts";
+import { chunks, product, sum } from "./arrays.ts";
 
 Deno.test("chunks", () => {
   assertEquals([[1, 2], [3, 4], [5]], chunks([1, 2, 3, 4, 5], 2));
@@ -15,4 +15,12 @@ Deno.test("sum", () => {
 
 Deno.test("sum - reduce", () => {
   assertEquals(6, [1, 2, 3].reduce(sum, 0));
+});
+
+Deno.test("product", () => {
+  assertEquals(24, product([1, 2, 3, 4]));
+});
+
+Deno.test("product - reduce", () => {
+  assertEquals(24, [1, 2, 3, 4].reduce(product, 1));
 });

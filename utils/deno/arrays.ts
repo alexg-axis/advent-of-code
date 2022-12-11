@@ -36,7 +36,7 @@ export function chunks<T>(arrayOrLength: T[] | number, length?: number) {
 /**
  * Sum an array using reduce.
  * @example
- * [1, 2, 3].reduce(sum)
+ * [1, 2, 3].reduce(sum, 0)
  */
 export function sum(previousValue: number, currentValue: number): number;
 /**
@@ -55,5 +55,30 @@ export function sum(
   } else {
     const array = previousValueOrArray;
     return array.reduce((sum, x) => sum + x);
+  }
+}
+
+/**
+ * Multiply elements in an array using reduce.
+ * @example
+ * [1, 2, 3].reduce(product, 1)
+ */
+export function product(previousValue: number, currentValue: number): number;
+/**
+ * Sum an array.
+ * @example
+ * product([1, 2, 3])
+ */
+export function product(array: number[]): number;
+export function product(
+  previousValueOrArray: number[] | number,
+  currentValue?: number
+) {
+  if (typeof previousValueOrArray === "number") {
+    const previousValue = previousValueOrArray;
+    return previousValue * currentValue!;
+  } else {
+    const array = previousValueOrArray;
+    return array.reduce((product, x) => product * x);
   }
 }

@@ -1,3 +1,4 @@
+import { product } from "../../utils/deno/arrays.ts";
 import type { Input } from "../../utils/deno/input.ts";
 
 type Operator = "+" | "-" | "*" | "/";
@@ -95,6 +96,39 @@ export function solvePart1(input: Input): number {
     // console.log(
     //   monkeys.map((x, i) => `Monkey ${i}: ` + x.items.join(", ")).join("\n")
     // );
+  }
+
+  const inspections = monkeys.map((x) => x.inspections).sort((a, b) => b - a);
+  return inspections[0] * inspections[1];
+}
+
+export function solvePart2(input: Input): number {
+  const monkeys = parseInput(input);
+  // Each monkey checks if the result is divisble by some factor.
+  // If we always make sure to keep the result below the product of all these
+  // factors, we can keep the number low without any of the monkeys noticing.
+  const secretSauce = monkeys.map((x) => x.divisibleBy).reduce(product, 1);
+
+  const evaluateMonkey = (monkey: Monkey) => {
+    monkey.inspections++;
+    // Pick up an item
+    let worryLevel = monkey.items.shift()!;
+    // Perform worry level operation
+    worryLevel = performOperation(worryLevel, ...monkey.operation);
+    worryLevel %= secretSauce;
+    if (worryLevel % monkey.divisibleBy === 0) {
+      monkeys[monkey.positive].items.push(worryLevel);
+    } else {
+      monkeys[monkey.negative].items.push(worryLevel);
+    }
+  };
+
+  for (let round = 0; round < 10000; round++) {
+    for (const monkey of monkeys) {
+      while (monkey.items.length > 0) {
+        evaluateMonkey(monkey);
+      }
+    }
   }
 
   const inspections = monkeys.map((x) => x.inspections).sort((a, b) => b - a);
