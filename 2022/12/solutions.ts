@@ -39,9 +39,11 @@ function parseInput(input: Input): Heightmap {
   };
 }
 
-export function solvePart1(input: Input): number {
-  const { startPosition, goalPosition, heightmap } = parseInput(input);
-
+function bfs(
+  startPosition: Vector,
+  goalPosition: Vector,
+  heightmap: number[][]
+): number {
   const toVisit: (Vector & { steps: number })[] = [];
   toVisit.push({ ...startPosition, steps: 0 });
 
@@ -86,4 +88,26 @@ export function solvePart1(input: Input): number {
   }
 
   return -1;
+}
+
+export function solvePart1(input: Input): number {
+  const { startPosition, goalPosition, heightmap } = parseInput(input);
+
+  return bfs(startPosition, goalPosition, heightmap);
+}
+
+export function solvePart2(input: Input): number {
+  const { goalPosition, heightmap } = parseInput(input);
+
+  let shortest = Number.MAX_SAFE_INTEGER;
+  for (let y = 0; y < heightmap.length; y++) {
+    for (let x = 0; x < heightmap[0].length; x++) {
+      if (heightmap[y][x] === 0) {
+        const length = bfs({ x, y }, goalPosition, heightmap);
+        if (length !== -1 && length < shortest) shortest = length;
+      }
+    }
+  }
+
+  return shortest;
 }
