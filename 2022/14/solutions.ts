@@ -1,15 +1,42 @@
 import { Input } from "../../utils/deno/input.ts";
-import { product, sum } from "../../utils/deno/arrays.ts";
-
-type Packet = number | Packet[];
-type Divisor = [[number]];
-
-type Grid<T> = T[][];
 
 type Vector = [number, number];
 
+class Bitmap {
+  private bitmap: Record<number, Record<number, boolean>>;
+
+  constructor() {
+    this.bitmap = {};
+  }
+
+  set(x: number, y: number) {
+    if (!this.bitmap[y]) this.bitmap[y] = {};
+    this.bitmap[y][x] = true;
+  }
+
+  unset(x: number, y: number) {
+    if (!this.bitmap[y]) return;
+    delete this.bitmap[y][x];
+  }
+
+  isSet(x: number, y: number) {
+    return this.bitmap[y] && this.bitmap[y][x];
+  }
+
+  print(minX: number, maxX: number, minY: number, maxY: number) {
+    for (let y = minY; y <= maxY; y++) {
+      console.log(
+        new Array(maxX - minX + 1)
+          .fill(0)
+          .map((_, x) => (this.isSet(x + minX, y) ? "x" : "."))
+          .join("")
+      );
+    }
+  }
+}
+
 function parseInput(input: Input): {
-  grid: Grid<"#" | "o" | ".">;
+  bitmap: Bitmap;
   minX: number;
   maxX: number;
   minY: number;
@@ -34,9 +61,7 @@ function parseInput(input: Input): {
     }
   }
 
-  const grid: Grid<"#" | "o"> = new Array(maxY - minY + 1)
-    .fill(0)
-    .map(() => new Array(maxX - minX + 1).fill("."));
+  const bitmap = new Bitmap();
 
   for (const line of lines) {
     for (let i = 1; i < line.length; i++) {
@@ -45,18 +70,18 @@ function parseInput(input: Input): {
 
       if (a[0] === b[0]) {
         for (let y = Math.min(a[1], b[1]); y <= Math.max(a[1], b[1]); y++) {
-          grid[y - minY][a[0] - minX] = "#";
+          bitmap.set(a[0], y);
         }
       } else if (a[1] === b[1]) {
         for (let x = Math.min(a[0], b[0]); x <= Math.max(a[0], b[0]); x++) {
-          grid[a[1] - minY][x - minX] = "#";
+          bitmap.set(x, a[1]);
         }
       }
     }
   }
 
   return {
-    grid,
+    bitmap,
     minX,
     maxX,
     minY,
@@ -64,61 +89,106 @@ function parseInput(input: Input): {
   };
 }
 
-function printGrid<T>(grid: Grid<T>) {
-  console.log(grid.map((x) => x.join("")).join("\n"));
-}
-
 export function solvePart1(input: Input): number {
-  const { grid, minX } = parseInput(input);
-  // printGrid(grid);
+  const { bitmap, minX, maxX, maxY } = parseInput(input);
 
-  let sandCurrentX = 500 - minX;
+  let sandCurrentX = 500;
   let sandCurrentY = 0;
   let stable = 0;
   while (true) {
     // Out of bounds down
-    if (sandCurrentY + 1 === grid.length) {
+    if (sandCurrentY + 1 > maxY) {
       // Abyss
       return stable;
     }
 
     // Down
-    if (grid[sandCurrentY + 1][sandCurrentX] === ".") {
+    if (!bitmap.isSet(sandCurrentX, sandCurrentY + 1)) {
       sandCurrentY++;
       continue;
     }
 
     // Out of bounds left
-    if (sandCurrentX - 1 === -1) {
+    if (sandCurrentX - 1 < minX) {
       // Abyss
       return stable;
     }
 
     // Left diagonally
-    if (grid[sandCurrentY + 1][sandCurrentX - 1] === ".") {
+    if (!bitmap.isSet(sandCurrentX - 1, sandCurrentY + 1)) {
       sandCurrentX--;
       sandCurrentY++;
       continue;
     }
 
     // Out of bounds right
-    if (sandCurrentX + 1 === grid.length) {
+    if (sandCurrentX + 1 > maxX) {
       // Abyss
       return stable;
     }
 
     // Right diagonally
-    if (grid[sandCurrentY + 1][sandCurrentX + 1] === ".") {
+    if (!bitmap.isSet(sandCurrentX + 1, sandCurrentY + 1)) {
       sandCurrentX++;
       sandCurrentY++;
       continue;
     }
 
     // Stable
-    grid[sandCurrentY][sandCurrentX] = "o";
+    bitmap.set(sandCurrentX, sandCurrentY);
     stable++;
-    sandCurrentX = 500 - minX;
+    sandCurrentX = 500;
     sandCurrentY = 0;
-    // printGrid(grid);
+  }
+}
+
+export function solvePart2(input: Input): number {
+  const { bitmap, minX, maxX, minY, maxY } = parseInput(input);
+
+  let sandCurrentX = 500;
+  let sandCurrentY = 0;
+  let stable = 0;
+  while (true) {
+    // Out of bounds down (floor)
+    if (sandCurrentY + 1 === maxY + 2) {
+      // Stable
+      bitmap.set(sandCurrentX, sandCurrentY);
+      stable++;
+      sandCurrentX = 500;
+      sandCurrentY = 0;
+      continue;
+    }
+
+    // Down
+    if (!bitmap.isSet(sandCurrentX, sandCurrentY + 1)) {
+      sandCurrentY++;
+      continue;
+    }
+
+    // Left diagonally
+    if (!bitmap.isSet(sandCurrentX - 1, sandCurrentY + 1)) {
+      sandCurrentX--;
+      sandCurrentY++;
+      continue;
+    }
+
+    // Right diagonally
+    if (!bitmap.isSet(sandCurrentX + 1, sandCurrentY + 1)) {
+      sandCurrentX++;
+      sandCurrentY++;
+      continue;
+    }
+
+    // Stable
+    bitmap.set(sandCurrentX, sandCurrentY);
+    stable++;
+
+    // Goal
+    if (sandCurrentY === 0) {
+      return stable;
+    }
+
+    sandCurrentX = 500;
+    sandCurrentY = 0;
   }
 }
