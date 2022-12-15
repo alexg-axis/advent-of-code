@@ -50,3 +50,25 @@ export function solvePart1(input: Input, targetRow = 2000000): number {
 
   return possible - 1;
 }
+
+export function solvePart2(input: Input, maxCoordinate = 4000000): number {
+  const pairs = parseInput(input);
+
+  for (let y = 0; y <= maxCoordinate; y++) {
+    for (let x = 0; x <= maxCoordinate; ) {
+      const withinRange = pairs.filter(({ sensor, range }) =>
+        isWithinRange(sensor, [x, y], range)
+      );
+      if (withinRange.length === 0) {
+        return x * 4000000 + y;
+      }
+      // Move to the edge of the sensor coverage
+      for (const { sensor, range } of withinRange) {
+        const yDistance = Math.abs(sensor[1] - y);
+        x = Math.max(x, sensor[0] + range - yDistance + 1);
+      }
+    }
+  }
+
+  return -1;
+}
