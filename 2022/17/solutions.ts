@@ -118,7 +118,7 @@ export function positionIsValid(
   return [stuck, true];
 }
 
-export function solvePart1(input: Input, n = 2022): number {
+export function solvePart1(input: Input, n: number): number {
   const directions = input.raw.trim();
   const bitmap = new Bitmap();
   let maxY = 0;
@@ -168,11 +168,103 @@ export function solvePart1(input: Input, n = 2022): number {
         }
       }
     }
-
-    // bitmap.print(0, 6, 0, maxY, (x) => console.log("|" + x + "|"));
-    // console.log();
   }
 
-  // maxY is the zero-based position of the top + 1 = height
   return maxY + 1;
+}
+
+export function solvePart2(input: Input, n: number): number {
+  const directions = input.raw.trim();
+  const bitmap = new Bitmap();
+  let maxY = 0;
+  // Spawn is x of left, y of bottom
+  const spawn = { x: 2, y: maxY + 3 };
+
+  const lookup: Record<string, number> = {};
+  const heights: number[] = [];
+
+  let toRemove = 0;
+  let patternLength = 0;
+  let patternHeight = 0;
+  let skips = 0;
+  let j = 0;
+  for (let i = 0; i < n; i++) {
+    const shape = shapes[i % shapes.length];
+    const shapeHeight = shape.split("\n").length;
+
+    // Look for a repeating pattern if we haven't already skipped
+    if (skips === 0) {
+      const depths = new Array(7).fill(0).map((_, x) => {
+        const spawn = maxY + 3 + 1; // maxY is inclusive
+        // Free height from spawn downwards
+        for (let y = spawn; y >= 0; y--) {
+          if (bitmap.isSet(x, y)) {
+            return spawn - y - 1;
+          }
+        }
+        return 0;
+      });
+      // If we're dropping a shape with a wind sequence and height we've already seen
+      const fingerprint =
+        depths.join(",") + `;${j % directions.length};${i % shapes.length}`;
+      if (lookup[fingerprint]) {
+        toRemove = maxY + 3;
+        const previousI = lookup[fingerprint];
+        patternLength = i - previousI;
+        patternHeight = maxY - heights[previousI] + 3;
+        // console.log(
+        //   "identified pattern length and height",
+        //   patternLength,
+        //   patternHeight
+        // );
+        skips = Math.floor(n / patternLength);
+        i = skips * patternLength;
+      } else {
+        lookup[fingerprint] = i;
+      }
+    }
+
+    let x = spawn.x;
+    let y = spawn.y;
+    while (true) {
+      const direction = directions[j++ % directions.length];
+
+      // Apply wind
+      let stuck = false;
+      let valid = false;
+      if (direction === "<") {
+        [stuck, valid] = positionIsValid(bitmap, shape, x - 1, y);
+        if (valid) {
+          x--;
+        }
+      } else {
+        [stuck, valid] = positionIsValid(bitmap, shape, x + 1, y);
+        if (valid) {
+          x++;
+        }
+      }
+
+      // Apply gravity
+      [stuck, valid] = positionIsValid(bitmap, shape, x, y - 1);
+      if (valid) {
+        y--;
+      }
+
+      // We couldn't move down, but we're still stuck aka
+      // this move caused us to settle
+      if (!valid) {
+        [stuck, valid] = positionIsValid(bitmap, shape, x, y);
+        if (stuck) {
+          maxY = Math.max(maxY, y + shapeHeight - 1);
+          applyShape(bitmap, shape, x, y);
+          spawn.y = maxY + 3 + 1; // maxY is inclusive
+          break;
+        }
+      }
+    }
+
+    heights.push(maxY);
+  }
+
+  return maxY + 1 + skips * patternHeight - toRemove;
 }

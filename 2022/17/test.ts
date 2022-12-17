@@ -7,11 +7,17 @@ import {
   positionIsValid,
   shapes,
   solvePart1,
+  solvePart2,
 } from "./solutions.ts";
 
 Deno.test("part 1 - given test case", () => {
   const input = `>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>`;
-  assertEquals(solvePart1(new Input(input)), 3068);
+  assertEquals(solvePart1(new Input(input), 2022), 3068);
+});
+
+Deno.test("part 2 - given test case", () => {
+  const input = `>>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>`;
+  assertEquals(solvePart2(new Input(input), 1000000000000), 1514285714288);
 });
 
 Deno.test("applyShape 0", () => {
