@@ -20,7 +20,7 @@ class Bitmap {
   }
 
   isSet(x: number, y: number) {
-    return this.bitmap[y] && this.bitmap[y][x];
+    return this.bitmap[y] && this.bitmap[y][x] ? true : false;
   }
 
   print(minX: number, maxX: number, minY: number, maxY: number) {
