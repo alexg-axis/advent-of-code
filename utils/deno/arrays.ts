@@ -82,3 +82,87 @@ export function product(
     return array.reduce((product, x) => product * x);
   }
 }
+
+/**
+ * Maximum element.
+ * @example
+ * [1, 2, 3].reduce(max, 1)
+ */
+export function max(previousValue: number, currentValue: number): number;
+/**
+ * Sum an array.
+ * @example
+ * max([1, 2, 3])
+ */
+export function max(array: number[]): number;
+export function max(
+  previousValueOrArray: number[] | number,
+  currentValue?: number
+) {
+  if (typeof previousValueOrArray === "number") {
+    const previousValue = previousValueOrArray;
+    return Math.max(previousValue, currentValue!);
+  } else {
+    const array = previousValueOrArray;
+    return array.reduce((max, x) => Math.max(max, x));
+  }
+}
+
+/**
+ * Minimum element.
+ * @example
+ * [1, 2, 3].reduce(max, 1)
+ */
+export function min(previousValue: number, currentValue: number): number;
+/**
+ * Sum an array.
+ * @example
+ * min([1, 2, 3])
+ */
+export function min(array: number[]): number;
+export function min(
+  previousValueOrArray: number[] | number,
+  currentValue?: number
+) {
+  if (typeof previousValueOrArray === "number") {
+    const previousValue = previousValueOrArray;
+    return Math.min(previousValue, currentValue!);
+  } else {
+    const array = previousValueOrArray;
+    return array.reduce((min, x) => Math.min(min, x));
+  }
+}
+
+/**
+ * Bounds.
+ * @example
+ * [1, 2, 3].reduce(bounds, [Number.MAX_SAFE_INTEGER, Number.MIN_SAFE_INTEGER])
+ */
+export function bounds(
+  previousValue: [number, number],
+  currentValue: number
+): [number, number];
+/**
+ * Sum an array.
+ * @example
+ * bounds([1, 2, 3])
+ */
+export function bounds(array: number[]): [number, number];
+export function bounds(
+  previousValueOrArray: number[] | [number, number],
+  currentValue?: number
+) {
+  if (currentValue !== undefined) {
+    const [previousMin, previousMax] = previousValueOrArray;
+    return [
+      Math.min(previousMin, currentValue),
+      Math.max(previousMax, currentValue),
+    ];
+  } else {
+    const array = previousValueOrArray;
+    return array.reduce(bounds, [
+      Number.MAX_SAFE_INTEGER,
+      Number.MIN_SAFE_INTEGER,
+    ]);
+  }
+}
