@@ -1,4 +1,4 @@
-import { sum } from "../../utils/deno/arrays.ts";
+import { product, sum } from "../../utils/deno/arrays.ts";
 import { Input } from "../../utils/deno/input.ts";
 
 interface Cost {
@@ -231,9 +231,19 @@ export function solvePart1(input: Input): number {
       ) as unknown as Blueprint
   );
 
-  const totalQuality = blueprints
-    .map((x, i) => (i + 1) * calculateGeodes(x))
-    .reduce(sum);
+  return blueprints.map((x, i) => (i + 1) * calculateGeodes(x)).reduce(sum);
+}
 
-  return totalQuality;
+export function solvePart2(input: Input): number {
+  const blueprints: Blueprint[] = input.lines.slice(0, 3).map(
+    (x) =>
+      Object.fromEntries(
+        x
+          .replace(/Blueprint \d+: /, "")
+          .split(/\. /)
+          .map(parseCost)
+      ) as unknown as Blueprint
+  );
+
+  return blueprints.map((x) => calculateGeodes(x, 32)).reduce(product);
 }
