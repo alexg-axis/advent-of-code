@@ -1,3 +1,5 @@
+import { permutations } from "https://deno.land/x/combinatorics/mod.ts";
+import { sum } from "../../utils/deno/arrays.ts";
 import { Input } from "../../utils/deno/input.ts";
 
 type Graph = Record<string, { flowRate: number; next: string[] }>;
@@ -19,78 +21,79 @@ function parseInput(input: Input): Graph {
     }, {});
 }
 
-function minimax(
-  graph: Graph,
-  open: string[],
-  node: string,
-  depth: number,
-  isMaximizing: boolean,
-  alpha: number,
-  beta: number
-): number {
-  if (isMaximizing) {
-    let best = Number.MIN_SAFE_INTEGER;
-    for (const next of graph[node].next) {
-      const value = minimax(graph, open, next, depth + 1, false, alpha, beta);
-      best = Math.max(best, value);
-      alpha = Math.max(alpha, best);
-      if (beta <= alpha) break;
-    }
-    return best;
-  } else {
-    let best = Number.MAX_SAFE_INTEGER;
-    for (const next of graph[node].next) {
-      const value = minimax(graph, open, next, depth + 1, true, alpha, beta);
-      best = Math.min(best, value);
-      alpha = Math.min(alpha, best);
-      if (beta <= alpha) break;
-    }
-    return best;
+const cache: Record<string, number> = {};
+
+function bfs(graph: Graph, from: string, to: string): number {
+  const key = `${from}:${to}`;
+  if (Object.hasOwn(cache, key)) {
+    return cache[key];
   }
+
+  const toVisit: { node: string; steps: number }[] = [];
+  toVisit.push({ node: from, steps: 0 });
+
+  const visited: string[] = [];
+  visited.push(from);
+
+  while (toVisit.length > 0) {
+    const current = toVisit.shift()!;
+
+    if (current.node === to) {
+      cache[key] = current.steps;
+      return current.steps;
+    }
+
+    for (const next of graph[current.node].next) {
+      if (!visited.includes(next)) {
+        visited.push(next);
+        toVisit.push({
+          node: next,
+          steps: current.steps + 1,
+        });
+      }
+    }
+  }
+
+  return -1;
 }
 
-// TODO: normalize sources to use this as maximizing instead
-function bellmanFord(graph: Graph, source: string): number {
-  const distances: Record<string, number> = Object.fromEntries(
-    Object.keys(graph).map((x) => [x, Number.MIN_SAFE_INTEGER])
-  );
-  distances[source] = 0;
+function evaluate(graph: Graph, path: string[], iterations = 30): number {
+  // Keep track of when we opened a certain valve
+  const open: Record<string, number> = {};
+  for (let n = 0; n < iterations; n++) {
+    for (let i = 1; i < path.length; i++) {
+      const from = path[i - 1];
+      const to = path[i];
 
-  const path: Record<string, string[]> = Object.fromEntries(
-    Object.keys(graph).map((x) => [x, []])
-  );
-
-  for (const node of Object.keys(graph)) {
-    for (const next of graph[node].next) {
-      const weight = 2 + graph[node].flowRate;
-      // This is the magic - highest cost is evaluated to lowest cost to work
-      // with Bellman-Ford
-      // Assumes no cycles
-      const normalizedWeight = 1 / weight;
-      if (distances[node] + weight > distances[next]) {
-        distances[next] = distances[node] + weight;
-        path[node].push(next);
+      const steps = bfs(graph, from, to);
+      n += steps;
+      // Open valve if possible
+      if (n < iterations) {
+        n++;
+        open[to] = n;
       }
     }
   }
 
-  for (const node of Object.keys(graph)) {
-    for (const next of graph[node].next) {
-      const weight = 2 + graph[node].flowRate;
-      if (distances[node] + weight > distances[next]) {
-        console.log("cycle");
-        // throw new Error("cycle");
-      }
-    }
-  }
-
-  console.log(distances, path);
-  return -1;
+  // Calculate the released pressure
+  return Object.entries(open)
+    .map(
+      ([valve, iteration]) => (iterations - iteration) * graph[valve].flowRate
+    )
+    .reduce(sum);
 }
 
 export function solvePart1(input: Input): number {
   const graph = parseInput(input);
-  console.log(graph);
 
-  return bellmanFord(graph, "AA");
+  let maxFlow = 0;
+  for (const steps of permutations(
+    Object.keys(graph).filter((x) => x !== "AA")
+  )) {
+    const path = ["AA", ...steps];
+    const flow = evaluate(graph, path);
+    maxFlow = Math.max(maxFlow, flow);
+  }
+
+  return maxFlow;
 }
