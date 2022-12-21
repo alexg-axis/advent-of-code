@@ -1,4 +1,3 @@
-import { permutations } from "https://deno.land/x/combinatorics/mod.ts";
 import { sum } from "../../utils/deno/arrays.ts";
 import { Input } from "../../utils/deno/input.ts";
 
@@ -76,6 +75,56 @@ function calculateGainAndCost(
   return [gain, cost];
 }
 
+const max: Record<number, number> = {};
+function branch(
+  graph: Graph,
+  lookup: Record<string, Dijkstra>,
+  toOpen: string[],
+  opened: Record<string, number>,
+  current: string,
+  n: number
+): [string[], Record<string, number>] {
+  const worthAShort: Record<string, [number, number]> = Object.fromEntries(
+    toOpen.map(
+      (x) =>
+        [x, calculateGainAndCost(graph, current, x, n, 30, lookup)] as [
+          string,
+          [number, number]
+        ]
+    )
+  );
+
+  let maxGain = 0;
+  let selectedOpened = opened;
+  let selectedToOpen = toOpen;
+  for (const next of Object.keys(worthAShort)) {
+    const [nextToOpen, nextOpened] = branch(
+      graph,
+      lookup,
+      toOpen.filter((x) => x !== next),
+      {
+        ...opened,
+        [next]: n + worthAShort[next][1],
+      },
+      next,
+      n + worthAShort[next][1]
+    );
+
+    const gain = Object.keys(nextOpened)
+      .map((x) => (30 - nextOpened[x]) * graph[x].flowRate)
+      .reduce(sum, 0);
+
+    if (gain > maxGain) {
+      maxGain = gain;
+      selectedOpened = nextOpened;
+      selectedToOpen = nextToOpen;
+    }
+  }
+
+  max[n] = Math.max(max[n], maxGain);
+  return [selectedToOpen, selectedOpened];
+}
+
 export function solvePart1(input: Input): number {
   const graph = parseInput(input);
 
@@ -84,44 +133,14 @@ export function solvePart1(input: Input): number {
     Object.keys(graph).map((x) => [x, dijkstra(graph, x)])
   );
 
-  console.log(graph);
-
-  let toOpen: string[] = Object.keys(graph).filter((x) => x !== "AA");
-  const opened: Record<string, number> = {};
-  let current = "AA";
-  for (let n = 0; n < 30; n++) {
-    let selected = "";
-    let maxGain = 0;
-    let maxGainCost = 0;
-    for (const next of toOpen) {
-      const [gain, cost] = calculateGainAndCost(
-        graph,
-        current,
-        next,
-        n,
-        30,
-        lookup
-      );
-      console.log(`From ${current} to ${next} costs ${cost} for ${gain} gain`);
-      if (gain > maxGain) {
-        selected = next;
-        maxGain = gain;
-        maxGainCost = cost;
-      }
-    }
-
-    // No move found
-    if (selected === "") {
-      break;
-    }
-
-    console.log(`Selected ${selected}`);
-    console.log();
-    n += maxGainCost;
-    toOpen = toOpen.filter((x) => x !== selected);
-    opened[selected] = n;
-    current = selected;
-  }
+  const [_, opened] = branch(
+    graph,
+    lookup,
+    Object.keys(graph).filter((x) => x !== "AA"),
+    {},
+    "AA",
+    0
+  );
 
   console.log(
     Object.entries(opened)
@@ -129,9 +148,10 @@ export function solvePart1(input: Input): number {
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n")
   );
+
   const total = Object.keys(opened)
     .map((x) => (30 - opened[x]) * graph[x].flowRate)
-    .reduce(sum);
+    .reduce(sum, 0);
 
   return total;
 }
