@@ -21,79 +21,117 @@ function parseInput(input: Input): Graph {
     }, {});
 }
 
-const cache: Record<string, number> = {};
-
-function bfs(graph: Graph, from: string, to: string): number {
-  const key = `${from}:${to}`;
-  if (Object.hasOwn(cache, key)) {
-    return cache[key];
-  }
-
-  const toVisit: { node: string; steps: number }[] = [];
-  toVisit.push({ node: from, steps: 0 });
-
-  const visited: string[] = [];
-  visited.push(from);
-
-  while (toVisit.length > 0) {
-    const current = toVisit.shift()!;
-
-    if (current.node === to) {
-      cache[key] = current.steps;
-      return current.steps;
-    }
-
-    for (const next of graph[current.node].next) {
-      if (!visited.includes(next)) {
-        visited.push(next);
-        toVisit.push({
-          node: next,
-          steps: current.steps + 1,
-        });
-      }
-    }
-  }
-
-  return -1;
+interface Dijkstra {
+  distances: Record<string, number>;
+  previous: Record<string, string | null>;
 }
 
-function evaluate(graph: Graph, path: string[], iterations = 30): number {
-  // Keep track of when we opened a certain valve
-  const open: Record<string, number> = {};
-  for (let n = 0; n < iterations; n++) {
-    for (let i = 1; i < path.length; i++) {
-      const from = path[i - 1];
-      const to = path[i];
+function dijkstra(graph: Graph, from: string): Dijkstra {
+  const distances: Record<string, number> = Object.fromEntries(
+    Object.entries(graph).map(([k]) => [k, Number.POSITIVE_INFINITY])
+  );
+  distances[from] = 0;
+  const previous: Record<string, string | null> = Object.fromEntries(
+    Object.entries(graph).map(([k]) => [k, null])
+  );
 
-      const steps = bfs(graph, from, to);
-      n += steps;
-      // Open valve if possible
-      if (n < iterations) {
-        n++;
-        open[to] = n;
+  const visited: string[] = [];
+
+  const toVisit: string[] = [];
+  toVisit.push(from);
+
+  while (toVisit.length > 0) {
+    const current = toVisit
+      .sort((a, b) => distances[a] - distances[b])
+      .shift()!;
+    visited.push(current);
+    for (const next of graph[current].next) {
+      if (visited.includes(next)) {
+        continue;
+      }
+      toVisit.push(next);
+
+      if (distances[current] + 1 < distances[next]) {
+        distances[next] = distances[current] + 1;
+        previous[next] = current;
       }
     }
   }
 
-  // Calculate the released pressure
-  return Object.entries(open)
-    .map(
-      ([valve, iteration]) => (iterations - iteration) * graph[valve].flowRate
-    )
-    .reduce(sum);
+  return { distances, previous };
+}
+
+function calculateGainAndCost(
+  graph: Graph,
+  from: string,
+  to: string,
+  iteration: number,
+  iterations: number,
+  lookup: Record<string, Dijkstra>
+): [number, number] {
+  // The iterations it will take until the valve is open
+  const cost = lookup[from].distances[to] + 1; // +1 to open
+  // The pressure that will be released for the remaining iterations
+  const gain = Math.max(0, iterations - iteration - cost) * graph[to].flowRate;
+  return [gain, cost];
 }
 
 export function solvePart1(input: Input): number {
   const graph = parseInput(input);
 
-  let maxFlow = 0;
-  for (const steps of permutations(
-    Object.keys(graph).filter((x) => x !== "AA")
-  )) {
-    const path = ["AA", ...steps];
-    const flow = evaluate(graph, path);
-    maxFlow = Math.max(maxFlow, flow);
+  // Generate all possible shortest paths
+  const lookup: Record<string, Dijkstra> = Object.fromEntries(
+    Object.keys(graph).map((x) => [x, dijkstra(graph, x)])
+  );
+
+  console.log(graph);
+
+  let toOpen: string[] = Object.keys(graph).filter((x) => x !== "AA");
+  const opened: Record<string, number> = {};
+  let current = "AA";
+  for (let n = 0; n < 30; n++) {
+    let selected = "";
+    let maxGain = 0;
+    let maxGainCost = 0;
+    for (const next of toOpen) {
+      const [gain, cost] = calculateGainAndCost(
+        graph,
+        current,
+        next,
+        n,
+        30,
+        lookup
+      );
+      console.log(`From ${current} to ${next} costs ${cost} for ${gain} gain`);
+      if (gain > maxGain) {
+        selected = next;
+        maxGain = gain;
+        maxGainCost = cost;
+      }
+    }
+
+    // No move found
+    if (selected === "") {
+      break;
+    }
+
+    console.log(`Selected ${selected}`);
+    console.log();
+    n += maxGainCost;
+    toOpen = toOpen.filter((x) => x !== selected);
+    opened[selected] = n;
+    current = selected;
   }
 
-  return maxFlow;
+  console.log(
+    Object.entries(opened)
+      .sort((a, b) => a[1] - b[1])
+      .map(([k, v]) => `${k}: ${v}`)
+      .join("\n")
+  );
+  const total = Object.keys(opened)
+    .map((x) => (30 - opened[x]) * graph[x].flowRate)
+    .reduce(sum);
+
+  return total;
 }
