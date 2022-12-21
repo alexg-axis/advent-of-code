@@ -75,7 +75,6 @@ function calculateGainAndCost(
   return [gain, cost];
 }
 
-const max: Record<number, number> = {};
 function branch(
   graph: Graph,
   lookup: Record<string, Dijkstra>,
@@ -84,44 +83,42 @@ function branch(
   current: string,
   n: number
 ): [string[], Record<string, number>] {
-  const worthAShort: Record<string, [number, number]> = Object.fromEntries(
-    toOpen.map(
-      (x) =>
-        [x, calculateGainAndCost(graph, current, x, n, 30, lookup)] as [
-          string,
-          [number, number]
-        ]
-    )
-  );
+  if (n >= 30) {
+    return [[], opened];
+  }
 
   let maxGain = 0;
   let selectedOpened = opened;
   let selectedToOpen = toOpen;
-  for (const next of Object.keys(worthAShort)) {
+  for (const next of toOpen) {
+    const [_, cost] = calculateGainAndCost(graph, current, next, n, 30, lookup);
+    if (n + cost >= 30) {
+      continue;
+    }
+
     const [nextToOpen, nextOpened] = branch(
       graph,
       lookup,
       toOpen.filter((x) => x !== next),
       {
         ...opened,
-        [next]: n + worthAShort[next][1],
+        [next]: n + cost,
       },
       next,
-      n + worthAShort[next][1]
+      n + cost
     );
 
-    const gain = Object.keys(nextOpened)
+    const totalGain = Object.keys(nextOpened)
       .map((x) => (30 - nextOpened[x]) * graph[x].flowRate)
       .reduce(sum, 0);
 
-    if (gain > maxGain) {
-      maxGain = gain;
+    if (totalGain > maxGain) {
+      maxGain = totalGain;
       selectedOpened = nextOpened;
       selectedToOpen = nextToOpen;
     }
   }
 
-  max[n] = Math.max(max[n], maxGain);
   return [selectedToOpen, selectedOpened];
 }
 
@@ -136,7 +133,7 @@ export function solvePart1(input: Input): number {
   const [_, opened] = branch(
     graph,
     lookup,
-    Object.keys(graph).filter((x) => x !== "AA"),
+    Object.keys(graph).filter((x) => x !== "AA" && graph[x].flowRate > 0),
     {},
     "AA",
     0
