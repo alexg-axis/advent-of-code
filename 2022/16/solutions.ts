@@ -1,5 +1,6 @@
 import { sum } from "../../utils/deno/arrays.ts";
 import { Input } from "../../utils/deno/input.ts";
+import { combinations } from "https://deno.land/x/combinatorics/mod.ts";
 
 type Graph = Record<string, { flowRate: number; next: string[] }>;
 
@@ -139,16 +140,57 @@ export function solvePart1(input: Input): number {
     0
   );
 
-  console.log(
-    Object.entries(opened)
-      .sort((a, b) => a[1] - b[1])
-      .map(([k, v]) => `${k}: ${v}`)
-      .join("\n")
-  );
+  // console.log(
+  //   Object.entries(opened)
+  //     .sort((a, b) => a[1] - b[1])
+  //     .map(([k, v]) => `${k}: ${v}`)
+  //     .join("\n")
+  // );
 
   const total = Object.keys(opened)
     .map((x) => (30 - opened[x]) * graph[x].flowRate)
     .reduce(sum, 0);
 
   return total;
+}
+
+export function solvePart2(input: Input): number {
+  const graph = parseInput(input);
+
+  // Generate all possible shortest paths
+  const lookup: Record<string, Dijkstra> = Object.fromEntries(
+    Object.keys(graph).map((x) => [x, dijkstra(graph, x)])
+  );
+
+  const toOpen = Object.keys(graph).filter(
+    (x) => x !== "AA" && graph[x].flowRate > 0
+  );
+
+  let max = 0;
+  let maxOpened: Record<string, number> = {};
+  for (const toOpenA of combinations(toOpen, Math.ceil(toOpen.length / 2))) {
+    const toOpenB = toOpen.filter((x) => !toOpenA.includes(x));
+
+    const openedA = branch(graph, lookup, toOpenA, {}, "AA", 0)[1];
+    const openedB = branch(graph, lookup, toOpenB, {}, "AA", 0)[1];
+
+    const opened = { ...openedA, ...openedB };
+
+    const total = Object.keys(opened)
+      .map((x) => (26 - opened[x]) * graph[x].flowRate)
+      .reduce(sum, 0);
+    if (total > max) {
+      max = total;
+      maxOpened = opened;
+    }
+  }
+
+  // console.log(
+  //   Object.entries(maxOpened)
+  //     .sort((a, b) => a[1] - b[1])
+  //     .map(([k, v]) => `${k}: ${v}`)
+  //     .join("\n")
+  // );
+
+  return max;
 }
