@@ -140,9 +140,252 @@ export function solve(
     //     : instruction.value
     // );
     // console.log(current.x, current.y, current.direction);
-    const annotated = [...map.map((x) => [...x])];
-    annotated[previous.y][previous.x] = "F" as Tile;
-    annotated[current.y][current.x] = "T" as Tile;
+    // const annotated = [...map.map((x) => [...x])];
+    // annotated[previous.y][previous.x] = "F" as Tile;
+    // annotated[current.y][current.x] = "T" as Tile;
+    // console.log("|" + slice(annotated, current) + "|");
+    // console.log();
+  }
+
+  return current;
+}
+
+/*
+Works on my ~computer~ input :)
+ 12
+ 3
+45
+6
+*/
+const regions = [
+  [1, 0], // 1
+  [2, 0], // 2
+  [1, 1], // 3
+  [0, 2], // 4
+  [1, 2], // 5
+  [0, 3], // 6
+].map((x) => x.map((y) => y * 50));
+
+function findRegion(position: Position): number {
+  return regions.findIndex(
+    (region) =>
+      position.x >= region[0] &&
+      position.x < region[0] + 50 &&
+      position.y >= region[1] &&
+      position.y < region[1] + 50
+  );
+}
+
+function moveCube(map: Tile[][], current: Position): Position {
+  const { x: dx, y: dy } = delta(current.direction);
+
+  const currentRegion = findRegion(current);
+
+  let nextX = current.x + dx;
+  let nextY = current.y + dy;
+  let nextRegion = findRegion({
+    x: nextX,
+    y: nextY,
+    direction: current.direction,
+  });
+
+  // Directions:
+  // 0: right
+  // 1: down
+  // 2: left
+  // 3: up
+
+  // TODO:
+  if (nextRegion === -1) {
+    switch (currentRegion) {
+      case 0:
+        switch (current.direction) {
+          case 0:
+            nextRegion = 1;
+            nextX = regions[1][0];
+            break;
+          case 1:
+            nextRegion = 2;
+            nextY = regions[2][1];
+            break;
+          case 2:
+            nextRegion = 1;
+            nextX = regions[1][0] + 49;
+            break;
+          case 3:
+            nextRegion = 4;
+            nextY = regions[4][1] + 49;
+            break;
+        }
+        break;
+      case 1:
+        switch (current.direction) {
+          case 0:
+            nextRegion = 0;
+            nextX = regions[0][0];
+            break;
+          case 1:
+            nextRegion = 3;
+            nextX = regions[2][0] + 49;
+            break;
+          case 2:
+            nextRegion = 0;
+            nextX = regions[0][0] + 49;
+            break;
+          case 3:
+            nextRegion = 5;
+            nextY = regions[5][1] + 49;
+            break;
+        }
+        break;
+      case 2:
+        switch (current.direction) {
+          case 0:
+            nextRegion = 1;
+            nextY = regions[1][1] + 49;
+            break;
+          case 1:
+            nextRegion = 4;
+            nextY = regions[0][1];
+            break;
+          case 2:
+            nextRegion = 3;
+            nextY = regions[3][0];
+            break;
+          case 3:
+            nextRegion = 0;
+            nextY = regions[0][1] + 49;
+            break;
+        }
+        break;
+      case 3:
+        switch (current.direction) {
+          case 0:
+            nextRegion = 4;
+            nextX = regions[4][0];
+            break;
+          case 1:
+            nextRegion = 5;
+            nextY = regions[5][1];
+            break;
+          case 2:
+            nextRegion = 0;
+            nextX = regions[0][0];
+            break;
+          case 3:
+            nextRegion = 2;
+            nextX = regions[2][0];
+            break;
+        }
+        break;
+      case 4:
+        switch (current.direction) {
+          case 0:
+            nextRegion = 1;
+            nextX = regions[1][0];
+            break;
+          case 1:
+            nextRegion = 2;
+            nextY = regions[2][1];
+            break;
+          case 2:
+            nextRegion = 1;
+            nextX = regions[1][0] + 49;
+            break;
+          case 3:
+            nextRegion = 4;
+            nextY = regions[4][1] + 49;
+            break;
+        }
+        break;
+      case 5:
+        switch (current.direction) {
+          case 0:
+            nextRegion = 1;
+            nextX = regions[1][0];
+            break;
+          case 1:
+            nextRegion = 2;
+            nextY = regions[2][1];
+            break;
+          case 2:
+            nextRegion = 1;
+            nextX = regions[1][0] + 49;
+            break;
+          case 3:
+            nextRegion = 4;
+            nextY = regions[4][1] + 49;
+            break;
+        }
+        break;
+    }
+  }
+
+  if (map[nextY][nextX] === ".") {
+    return { x: nextX, y: nextY, direction: current.direction };
+  }
+
+  return current;
+}
+
+export function solveCube(
+  map: Tile[][],
+  instructions: Instruction[],
+  start?: Position
+): Position {
+  const height = map.length;
+  const width = map.map((x) => x.length).reduce(max);
+
+  if (!start) {
+    start = {
+      x: map[0].findIndex((x) => x === "."),
+      y: 0,
+      direction: 0,
+    };
+  }
+
+  const current: Position = {
+    x: start.x,
+    y: start.y,
+    direction: start.direction,
+  };
+
+  for (const instruction of instructions) {
+    const previous = { ...current };
+    if (instruction.type === "turn") {
+      const rotation = instruction.value;
+      current.direction = rotate(current.direction, rotation);
+    } else {
+      const steps = instruction.value;
+
+      // Try to move along the direction and wrap as needed, finding out if the
+      // destination is valid
+      for (let i = 0; i < steps; i++) {
+        const next = moveCube(map, current);
+        if (
+          next.x === current.x &&
+          next.y === current.y &&
+          next.direction === current.direction
+        ) {
+          // We didn't move, no use in continuing
+          break;
+        }
+        current.x = next.x;
+        current.y = next.y;
+        current.direction = next.direction;
+      }
+    }
+
+    // If the steps led us to a valid location along the path, move
+    // console.log(
+    //   instruction.type === "turn"
+    //     ? ["l", "", "r"][instruction.value + 1]
+    //     : instruction.value
+    // );
+    // console.log(current.x, current.y, current.direction);
+    // const annotated = [...map.map((x) => [...x])];
+    // annotated[previous.y][previous.x] = "F" as Tile;
+    // annotated[current.y][current.x] = "T" as Tile;
     // console.log("|" + slice(annotated, current) + "|");
     // console.log();
   }
@@ -154,6 +397,14 @@ export function solvePart1(input: Input): number {
   const [map, instructions] = parseInput(input);
 
   const solved = solve(map, instructions);
+
+  return 1000 * (solved.y + 1) + 4 * (solved.x + 1) + solved.direction;
+}
+
+export function solvePart2(input: Input): number {
+  const [map, instructions] = parseInput(input);
+
+  const solved = solveCube(map, instructions);
 
   return 1000 * (solved.y + 1) + 4 * (solved.x + 1) + solved.direction;
 }

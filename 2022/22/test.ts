@@ -1,6 +1,13 @@
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { Input } from "../../utils/deno/input.ts";
-import { parseInput, rotate, solve, solvePart1 } from "./solutions.ts";
+import {
+  parseInput,
+  rotate,
+  solve,
+  solveCube,
+  solvePart1,
+  solvePart2,
+} from "./solutions.ts";
 import input from "../../utils/deno/input.ts";
 
 Deno.test("part 1 - given test case", () => {
@@ -19,6 +26,24 @@ Deno.test("part 1 - given test case", () => {
 
 10R5L5R10L4R5L5`;
   assertEquals(solvePart1(new Input(input)), 6032);
+});
+
+Deno.test("part 2 - given test case", () => {
+  const input = `        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+
+10R5L5R10L4R5L5`;
+  assertEquals(solvePart2(new Input(input)), 5031);
 });
 
 Deno.test("part 1 - wrap right", () => {
@@ -187,5 +212,55 @@ Deno.test("part 1", () => {
       direction: 3,
     }),
     { x: 52, y: 132, direction: 3 }
+  );
+});
+
+Deno.test("part 2 - given test case", () => {
+  const input = `        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+
+1`;
+  assertEquals(
+    solveCube(...parseInput(new Input(input)), {
+      x: 11,
+      y: 5,
+      direction: 0,
+    }),
+    { x: 14, y: 8, direction: 3 }
+  );
+});
+
+Deno.test("part 2 - given test case", () => {
+  const input = `        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+
+1`;
+  assertEquals(
+    solveCube(...parseInput(new Input(input)), {
+      x: 10,
+      y: 11,
+      direction: 1,
+    }),
+    { x: 1, y: 7, direction: 3 }
   );
 });

@@ -62,14 +62,14 @@ It is possible for the next tile (after wrapping around) to be a __wall__; this 
 By drawing the __last facing you had__ with an arrow on each tile you visit, the full path taken by the above example looks like this:
 
 ```
-        >>v#
-        .#v.
-        #.v.
-        ..v.
-...#...v..v#
->>>v...>#.>>
-..#v...#....
-...>>>>v..#.
+        >>v#    
+        .#v.    
+        #.v.    
+        ..v.    
+...#...v..v#    
+>>>v...>#.>>    
+..#v...#....    
+...>>>>v..#.    
         ...#....
         .....#..
         .#......
@@ -81,3 +81,84 @@ To finish providing the password to this strange input device, you need to deter
 In the above example, the final row is `6`, the final column is `8`, and the final facing is `0`. So, the final password is 1000 * 6 + 4 * 8 + 0: `6032`.
 
 Follow the path given in the monkeys' notes. __What is the final password?__
+
+## --- Part Two ---
+
+As you reach the force field, you think you hear some Elves in the distance. Perhaps they've already arrived?
+
+You approach the strange __input device__, but it isn't quite what the monkeys drew in their notes. Instead, you are met with a large __cube__; each of its six faces is a square of 50x50 tiles.
+
+To be fair, the monkeys' map __does__ have six 50x50 regions on it. If you were to __carefully fold the map__, you should be able to shape it into a cube!
+
+In the example above, the six (smaller, 4x4) faces of the cube are:
+
+```
+        1111
+        1111
+        1111
+        1111
+222233334444
+222233334444
+222233334444
+222233334444
+        55556666
+        55556666
+        55556666
+        55556666
+```
+
+You still start in the same position and with the same facing as before, but the __wrapping__ rules are different. Now, if you would walk off the board, you instead __proceed around the cube__. From the perspective of the map, this can look a little strange. In the above example, if you are at A and move to the right, you would arrive at B facing down; if you are at C and move down, you would arrive at D facing up:
+
+```
+        ...#
+        .#..
+        #...
+        ....
+...#.......#
+........#..A
+..#....#....
+.D........#.
+        ...#..B.
+        .....#..
+        .#......
+        ..C...#.
+```
+
+Walls still block your path, even if they are on a different face of the cube. If you are at E facing up, your movement is blocked by the wall marked by the arrow:
+
+```
+        ...#
+        .#..
+     -->#...
+        ....
+...#..E....#
+........#...
+..#....#....
+..........#.
+        ...#....
+        .....#..
+        .#......
+        ......#.
+```
+
+Using the same method of drawing the __last facing you had__ with an arrow on each tile you visit, the full path taken by the above example now looks like this:
+
+```
+        >>v#    
+        .#v.    
+        #.v.    
+        ..v.    
+...#..^...v#    
+.>>>>>^.#.>>    
+.^#....#....    
+.^........#.    
+        ...#..v.
+        .....#v.
+        .#v<<<<.
+        ..v...#.
+```
+
+The final password is still calculated from your final position and facing from the perspective of the map. In this example, the final row is `5`, the final column is `7`, and the final facing is `3`, so the final password is 1000 * 5 + 4 * 7 + 3 = `5031`.
+
+Fold the map into a cube, __then__ follow the path given in the monkeys' notes. __What is the final password?__
+
