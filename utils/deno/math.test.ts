@@ -8,4 +8,5 @@ Deno.test("mod", () => {
   assertEquals(mod(-5, 10), 5);
   assertEquals(mod(-50, 10), 0);
   assertEquals(mod(-49, 10), 1);
+  assertEquals(mod(5, 10), 5);
 });
