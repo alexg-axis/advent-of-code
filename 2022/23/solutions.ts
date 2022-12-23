@@ -181,3 +181,123 @@ export function solvePart1(input: Input): number {
 
   return result.split("").filter((x) => x === ".").length;
 }
+
+export function solvePart2(input: Input): number {
+  let bitmap = new Bitmap();
+  const lines = input.lines;
+  for (let y = 0; y < lines.length; y++) {
+    for (let x = 0; x < lines[y].length; x++) {
+      if (lines[y][x] === "#") bitmap.set(x, y);
+    }
+  }
+
+  const checks = [
+    // North
+    (x: number, y: number) =>
+      !bitmap.isSet(x - 1, y - 1) &&
+      !bitmap.isSet(x, y - 1) &&
+      !bitmap.isSet(x + 1, y - 1),
+    // South
+    (x: number, y: number) =>
+      !bitmap.isSet(x - 1, y + 1) &&
+      !bitmap.isSet(x, y + 1) &&
+      !bitmap.isSet(x + 1, y + 1),
+    // West
+    (x: number, y: number) =>
+      !bitmap.isSet(x - 1, y + 1) &&
+      !bitmap.isSet(x - 1, y) &&
+      !bitmap.isSet(x - 1, y - 1),
+    // East
+    (x: number, y: number) =>
+      !bitmap.isSet(x + 1, y - 1) &&
+      !bitmap.isSet(x + 1, y) &&
+      !bitmap.isSet(x + 1, y + 1),
+  ];
+
+  const performMoves: ((
+    count: Record<string, number>,
+    moves: [[number, number], [number, number]][],
+    x: number,
+    y: number
+  ) => void)[] = [
+    // North
+    (count, moves, x, y) => {
+      count[`${x}:${y - 1}`] = (count[`${x}:${y - 1}`] || 0) + 1;
+      moves.push([
+        [x, y],
+        [x, y - 1],
+      ]);
+    },
+    // South
+    (count, moves, x, y) => {
+      count[`${x}:${y + 1}`] = (count[`${x}:${y + 1}`] || 0) + 1;
+      moves.push([
+        [x, y],
+        [x, y + 1],
+      ]);
+    },
+    // West
+    (count, moves, x, y) => {
+      count[`${x - 1}:${y}`] = (count[`${x - 1}:${y}`] || 0) + 1;
+      moves.push([
+        [x, y],
+        [x - 1, y],
+      ]);
+    },
+    // East
+    (count, moves, x, y) => {
+      count[`${x + 1}:${y}`] = (count[`${x + 1}:${y}`] || 0) + 1;
+      moves.push([
+        [x, y],
+        [x + 1, y],
+      ]);
+    },
+  ];
+
+  for (let i = 0; i < 1000; i++) {
+    const count: Record<string, number> = {};
+    const moves: [[number, number], [number, number]][] = [];
+    const nextBitmap = new Bitmap();
+    for (const [x, y] of bitmap.iterate()) {
+      let adjacent = "";
+      bitmap.print(x - 1, x + 1, y - 1, y + 1, (x) => (adjacent += x));
+      if (adjacent.split("").filter((x) => x === "#").length === 1) {
+        // No adjacent elves, do nothing
+        nextBitmap.set(x, y);
+        continue;
+      }
+
+      let performedMove = false;
+      for (let j = 0; j < 4; j++) {
+        const check = (i + j) % 4;
+        if (checks[check](x, y)) {
+          performMoves[check](count, moves, x, y);
+          performedMove = true;
+          break;
+        }
+      }
+
+      if (!performedMove) {
+        // Do nothing
+        nextBitmap.set(x, y);
+      }
+    }
+
+    if (moves.length === 0) {
+      return i + 1;
+    }
+
+    for (const [from, to] of moves) {
+      if (count[`${to[0]}:${to[1]}`] === 1) {
+        nextBitmap.set(...to);
+      } else {
+        nextBitmap.set(...from);
+      }
+    }
+    bitmap = nextBitmap;
+    // bitmap.print(-12, 24, -12, 12);
+    // console.log();
+  }
+
+  return -1;
+}
