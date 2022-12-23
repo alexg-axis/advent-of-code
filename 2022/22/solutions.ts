@@ -183,11 +183,14 @@ function moveCube(map: Tile[][], current: Position): Position {
 
   let nextX = current.x + dx;
   let nextY = current.y + dy;
-  let nextRegion = findRegion({
-    x: nextX,
-    y: nextY,
-    direction: current.direction,
-  });
+  let nextDirection = current.direction;
+  let nextRegion = currentRegion;
+
+  const hasLeftRegion =
+    nextX < regions[currentRegion][0] ||
+    nextX > regions[currentRegion][0] + 49 ||
+    nextY < regions[currentRegion][1] ||
+    nextY > regions[currentRegion][1] + 49;
 
   // Directions:
   // 0: right
@@ -195,126 +198,151 @@ function moveCube(map: Tile[][], current: Position): Position {
   // 2: left
   // 3: up
 
-  // TODO:
-  if (nextRegion === -1) {
+  if (hasLeftRegion) {
     switch (currentRegion) {
-      case 0:
+      case 0: // Face 1
         switch (current.direction) {
-          case 0:
+          case 0: // Right
             nextRegion = 1;
             nextX = regions[1][0];
             break;
-          case 1:
+          case 1: // Down
             nextRegion = 2;
             nextY = regions[2][1];
             break;
-          case 2:
-            nextRegion = 1;
-            nextX = regions[1][0] + 49;
+          case 2: // Left
+            nextRegion = 3;
+            nextX = regions[3][0];
+            nextY = regions[3][1] + 49 - (current.y - regions[0][1]);
+            nextDirection = 0;
             break;
-          case 3:
-            nextRegion = 4;
-            nextY = regions[4][1] + 49;
+          case 3: // Up
+            nextRegion = 5;
+            nextX = regions[5][0];
+            nextY = regions[5][1] + (current.x - regions[0][0]);
+            nextDirection = 0;
             break;
         }
         break;
-      case 1:
+      case 1: // Face 2
         switch (current.direction) {
-          case 0:
-            nextRegion = 0;
-            nextX = regions[0][0];
+          case 0: // Right
+            nextRegion = 4;
+            nextX = regions[4][0] + 49;
+            nextY = regions[4][1] + 49 - (current.y - regions[1][1]);
+            nextDirection = 2;
             break;
-          case 1:
-            nextRegion = 3;
+          case 1: // Down
+            nextRegion = 2;
+            nextY = regions[2][1] + (current.x - regions[1][0]);
             nextX = regions[2][0] + 49;
+            nextDirection = 2;
             break;
-          case 2:
+          case 2: // Left
             nextRegion = 0;
             nextX = regions[0][0] + 49;
             break;
-          case 3:
+          case 3: // Up
             nextRegion = 5;
             nextY = regions[5][1] + 49;
+            nextX = regions[5][0] + (current.x - regions[1][0]);
             break;
         }
         break;
-      case 2:
+      case 2: // Face 3
         switch (current.direction) {
-          case 0:
+          case 0: // Right
             nextRegion = 1;
+            nextX = regions[1][0] + (current.y - regions[2][1]);
             nextY = regions[1][1] + 49;
+            nextDirection = 3;
             break;
-          case 1:
+          case 1: // Down
             nextRegion = 4;
-            nextY = regions[0][1];
+            nextY = regions[4][1];
             break;
-          case 2:
+          case 2: // Left
             nextRegion = 3;
-            nextY = regions[3][0];
+            nextX = regions[3][0] + (current.y - regions[2][1]);
+            nextY = regions[3][1];
+            nextDirection = 1;
             break;
-          case 3:
+          case 3: // Up
             nextRegion = 0;
             nextY = regions[0][1] + 49;
             break;
         }
         break;
-      case 3:
+      case 3: // Face 4
         switch (current.direction) {
-          case 0:
+          case 0: // Right
             nextRegion = 4;
             nextX = regions[4][0];
             break;
-          case 1:
+          case 1: // Down
             nextRegion = 5;
             nextY = regions[5][1];
             break;
-          case 2:
+          case 2: // Left
             nextRegion = 0;
             nextX = regions[0][0];
+            nextY = regions[0][1] + 49 - (current.y - regions[3][1]);
+            nextDirection = 0;
             break;
-          case 3:
+          case 3: // Up
             nextRegion = 2;
             nextX = regions[2][0];
+            nextY = regions[2][1] + (current.x - regions[3][0]);
+            nextDirection = 0;
             break;
         }
         break;
-      case 4:
+      case 4: // Face 5
         switch (current.direction) {
-          case 0:
-            nextRegion = 1;
-            nextX = regions[1][0];
-            break;
-          case 1:
-            nextRegion = 2;
-            nextY = regions[2][1];
-            break;
-          case 2:
+          case 0: // Right
             nextRegion = 1;
             nextX = regions[1][0] + 49;
+            nextY = regions[1][1] + 49 - (current.y - regions[4][1]);
+            nextDirection = 2;
             break;
-          case 3:
-            nextRegion = 4;
-            nextY = regions[4][1] + 49;
+          case 1: // Down
+            nextRegion = 5;
+            nextX = regions[5][0] + 49;
+            nextY = regions[5][1] + (current.x - regions[4][0]);
+            nextDirection = 2;
+            break;
+          case 2: // Left
+            nextRegion = 3;
+            nextX = regions[3][0] + 49;
+            break;
+          case 3: // Up
+            nextRegion = 2;
+            nextY = regions[2][1] + 49;
             break;
         }
         break;
-      case 5:
+      case 5: // Face 6
         switch (current.direction) {
-          case 0:
-            nextRegion = 1;
-            nextX = regions[1][0];
-            break;
-          case 1:
-            nextRegion = 2;
-            nextY = regions[2][1];
-            break;
-          case 2:
-            nextRegion = 1;
-            nextX = regions[1][0] + 49;
-            break;
-          case 3:
+          case 0: // Right
             nextRegion = 4;
+            nextX = regions[4][0] + (current.y - regions[5][1]);
             nextY = regions[4][1] + 49;
+            nextDirection = 3;
+            break;
+          case 1: // Down
+            nextRegion = 1;
+            nextY = regions[1][1];
+            nextX = regions[1][0] + (current.x - regions[5][0]);
+            break;
+          case 2: // Left
+            nextRegion = 0;
+            nextX = regions[0][0] + (current.y - regions[5][1]);
+            nextY = regions[0][1];
+            nextDirection = 1;
+            break;
+          case 3: // Up
+            nextRegion = 3;
+            nextY = regions[3][1] + 49;
             break;
         }
         break;
@@ -322,7 +350,7 @@ function moveCube(map: Tile[][], current: Position): Position {
   }
 
   if (map[nextY][nextX] === ".") {
-    return { x: nextX, y: nextY, direction: current.direction };
+    return { x: nextX, y: nextY, direction: nextDirection };
   }
 
   return current;
@@ -333,9 +361,6 @@ export function solveCube(
   instructions: Instruction[],
   start?: Position
 ): Position {
-  const height = map.length;
-  const width = map.map((x) => x.length).reduce(max);
-
   if (!start) {
     start = {
       x: map[0].findIndex((x) => x === "."),
@@ -351,7 +376,6 @@ export function solveCube(
   };
 
   for (const instruction of instructions) {
-    const previous = { ...current };
     if (instruction.type === "turn") {
       const rotation = instruction.value;
       current.direction = rotate(current.direction, rotation);
@@ -375,19 +399,6 @@ export function solveCube(
         current.direction = next.direction;
       }
     }
-
-    // If the steps led us to a valid location along the path, move
-    // console.log(
-    //   instruction.type === "turn"
-    //     ? ["l", "", "r"][instruction.value + 1]
-    //     : instruction.value
-    // );
-    // console.log(current.x, current.y, current.direction);
-    // const annotated = [...map.map((x) => [...x])];
-    // annotated[previous.y][previous.x] = "F" as Tile;
-    // annotated[current.y][current.x] = "T" as Tile;
-    // console.log("|" + slice(annotated, current) + "|");
-    // console.log();
   }
 
   return current;
