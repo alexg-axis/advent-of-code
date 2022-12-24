@@ -96,8 +96,10 @@ function bfs(
   const width = states[0][0].length;
   const height = states[0].length;
 
-  const toVisit: (Vector & { steps: number })[] = [];
-  toVisit.push({ ...startPosition, steps: 0 });
+  const toVisit: (Vector & { steps: number; waits: number })[] = [];
+  toVisit.push({ ...startPosition, steps: 0, waits: 0 });
+
+  const visited: Record<string, boolean> = {};
 
   while (toVisit.length > 0) {
     const current = toVisit.shift()!;
@@ -111,10 +113,11 @@ function bfs(
     }
 
     const checks = [
-      [-1, 0], // Left
       [1, 0], // Right
-      [0, -1], // Up
       [0, 1], // Down
+      [-1, 0], // Left
+      [0, -1], // Up
+      [0, 0], // Wait
     ];
 
     let moves = 0;
@@ -125,20 +128,17 @@ function bfs(
 
       const map = states[current.steps + 1];
       if (map[next.y][next.x] === ".") {
-        toVisit.push({
-          ...next,
-          steps: current.steps + 1,
-        });
+        const key = `${next.x}:${next.y}:${current.steps + 1}`;
+        if (!visited[key]) {
+          toVisit.push({
+            ...next,
+            steps: current.steps + 1,
+            waits: 0,
+          });
+          visited[key] = true;
+        }
         moves++;
       }
-    }
-
-    // Wait only if there are no moves
-    if (moves === 0) {
-      toVisit.push({
-        ...current,
-        steps: current.steps + 1,
-      });
     }
   }
 
