@@ -91,13 +91,14 @@ function mutate(currentMap: string[][]): string[][] {
 function bfs(
   states: string[][][],
   startPosition: Vector,
-  goalPosition: Vector
+  goalPosition: Vector,
+  initialSteps = 0
 ): number {
   const width = states[0][0].length;
   const height = states[0].length;
 
   const toVisit: (Vector & { steps: number; waits: number })[] = [];
-  toVisit.push({ ...startPosition, steps: 0, waits: 0 });
+  toVisit.push({ ...startPosition, steps: initialSteps, waits: 0 });
 
   const visited: Record<string, boolean> = {};
 
@@ -165,4 +166,30 @@ export function solvePart1(input: Input): number {
   };
 
   return bfs(states, startPosition, goalPosition);
+}
+
+export function solvePart2(input: Input): number {
+  const currentMap: string[][] = input.lines.map((x) => x.split(""));
+
+  // Pre-compute blizzard states
+  const states: string[][][] = [currentMap];
+  for (let i = 1; i < 1000; i++) {
+    states.push(mutate(states[i - 1]));
+  }
+
+  const startPosition = {
+    x: currentMap[0].findIndex((x) => x === "."),
+    y: 0,
+  };
+
+  const goalPosition = {
+    x: currentMap[currentMap.length - 1].findIndex((x) => x === "."),
+    y: currentMap.length - 1,
+  };
+
+  const round1 = bfs(states, startPosition, goalPosition);
+  const round2 = bfs(states, goalPosition, startPosition, round1);
+  const round3 = bfs(states, startPosition, goalPosition, round2);
+
+  return round3;
 }
