@@ -19,7 +19,7 @@ if [[ ! -d "$year/$day" ]]; then
   exit 1
 fi
 
-main_files="$(find "$year/$day" -depth 1 -iname "main*")"
+main_files="$(find "$year/$day" -maxdepth 1 -iname "main*")"
 for file in $main_files; do
   name="$(basename "$file")"
   directory="$(dirname "$file")"
