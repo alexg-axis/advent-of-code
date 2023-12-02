@@ -58,3 +58,28 @@ export function solvePart1(input: Input): number {
     .map((x) => x.id)
     .reduce((sum, x) => sum + x, 0);
 }
+
+function power(game: Game): number {
+  const max: Record<Color, number> = {
+    red: 0,
+    green: 0,
+    blue: 0,
+  };
+
+  for (const round of game.rounds) {
+    for (const color of Object.keys(max) as Color[]) {
+      if (round.counts[color] > max[color]) {
+        max[color] = round.counts[color];
+      }
+    }
+  }
+
+  return max.red * max.green * max.blue;
+}
+
+export function solvePart2(input: Input): number {
+  return input.lines
+    .map(parseGame)
+    .map(power)
+    .reduce((sum, x) => sum + x, 0);
+}
