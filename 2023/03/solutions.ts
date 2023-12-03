@@ -59,3 +59,65 @@ export function solvePart1(input: Input): number {
 
   return allParts.reduce((sum, x) => sum + x);
 }
+
+export function solvePart2(input: Input): number {
+  const map = input.lines;
+  const allRatios: number[] = [];
+  for (let y = 0; y < map.length; y++) {
+    const row = map[y];
+    for (let x = 0; x < row.length; x++) {
+      const cell = row[x];
+      if (cell !== "*") {
+        continue;
+      }
+
+      const ratios: number[] = [];
+      const left = row.slice(0, x).match(/\d+$/);
+      if (left) {
+        ratios.push(Number(left[0]));
+      }
+      const right = row.slice(x + 1).match(/^\d+/);
+      if (right) {
+        ratios.push(Number(right[0]));
+      }
+
+      if (y > 0) {
+        const left = map[y - 1].slice(0, x).match(/\d+$/);
+        const right = map[y - 1].slice(x + 1).match(/^\d+/);
+        if (map[y - 1][x].match(/\d/)) {
+          const concat = (left?.[0] || "") + map[y - 1][x] + (right?.[0] || "");
+          ratios.push(Number(concat));
+        } else {
+          if (left) {
+            ratios.push(Number(left[0]));
+          }
+          if (right) {
+            ratios.push(Number(right[0]));
+          }
+        }
+      }
+
+      if (y < map.length - 1) {
+        const left = map[y + 1].slice(0, x).match(/\d+$/);
+        const right = map[y + 1].slice(x + 1).match(/^\d+/);
+        if (map[y + 1][x].match(/\d/)) {
+          const concat = (left?.[0] || "") + map[y + 1][x] + (right?.[0] || "");
+          ratios.push(Number(concat));
+        } else {
+          if (left) {
+            ratios.push(Number(left[0]));
+          }
+          if (right) {
+            ratios.push(Number(right[0]));
+          }
+        }
+      }
+
+      if (ratios.length > 1) {
+        allRatios.push(ratios.reduce((product, x) => product * x, 1));
+      }
+    }
+  }
+
+  return allRatios.reduce((sum, x) => sum + x);
+}
