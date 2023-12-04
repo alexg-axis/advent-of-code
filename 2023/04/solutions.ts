@@ -31,3 +31,27 @@ export function solvePart1(input: Input): number {
 
   return score;
 }
+
+function countCardsRecursive(game: Card[], i: number, depth = 0): number {
+  const matches = game[i].myNumbers.filter((x) =>
+    game[i].winningNumbers.includes(x)
+  );
+  if (matches.length === 0) {
+    return 1;
+  }
+
+  let cards = 1;
+  for (let j = 0; j < matches.length; j++) {
+    cards += countCardsRecursive(game, i + j + 1, depth + 1);
+  }
+  return cards;
+}
+
+export function solvePart2(input: Input): number {
+  const game = parseGame(input);
+  let cards = 0;
+  for (let i = 0; i < game.length; i++) {
+    cards += countCardsRecursive(game, i);
+  }
+  return cards;
+}
