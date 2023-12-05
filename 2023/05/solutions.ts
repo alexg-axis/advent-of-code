@@ -33,7 +33,7 @@ function parseRange(line: string): { destination: Range; source: Range } {
 // seed-to-soil map:
 // 50 98 2
 // 52 50 48
-function parseAlmanac(input: Input): Almanac {
+export function parseAlmanac(input: Input): Almanac {
   const parts = input.raw.split("\n\n");
 
   const seeds = parts[0]
@@ -57,7 +57,7 @@ function parseAlmanac(input: Input): Almanac {
   };
 }
 
-function mapLocation(almanac: Almanac, seed: number): number {
+function mapSeedToLocation(almanac: Almanac, seed: number): number {
   let previous = seed;
   for (const map of Object.values(almanac.maps)) {
     let next = previous;
@@ -72,16 +72,53 @@ function mapLocation(almanac: Almanac, seed: number): number {
   return previous;
 }
 
+export function mapLocationToSeed(almanac: Almanac, location: number): number {
+  let next = location;
+  for (const map of Object.values(almanac.maps).reverse()) {
+    let previous = next;
+    for (const range of map) {
+      if (next >= range.destination.min && next <= range.destination.max) {
+        previous = next - range.destination.min + range.source.min;
+        break;
+      }
+    }
+    next = previous;
+  }
+  return next;
+}
+
 export function solvePart1(input: Input): number {
   const almanac = parseAlmanac(input);
 
   let minLocation = Number.MAX_VALUE;
   for (const seed of almanac.seeds) {
-    const location = mapLocation(almanac, seed);
+    const location = mapSeedToLocation(almanac, seed);
     if (location < minLocation) {
       minLocation = location;
     }
   }
 
   return minLocation;
+}
+
+export function solvePart2(input: Input): number {
+  const almanac = parseAlmanac(input);
+
+  const ranges: Range[] = [];
+  for (let i = 1; i < almanac.seeds.length; i += 2) {
+    const min = Number(almanac.seeds[i - 1]);
+    const length = Number(almanac.seeds[i]);
+    ranges.push({ min, max: min + length - 1, length });
+  }
+
+  for (let location = 0; location < 300e6; location++) {
+    const seed = mapLocationToSeed(almanac, location);
+    for (const range of ranges) {
+      if (seed >= range.min && seed <= range.max) {
+        return location;
+      }
+    }
+  }
+
+  return -1;
 }
