@@ -24,3 +24,20 @@ export function solvePart1(input: Input): number {
 
   return wins.reduce((product, x) => product * x);
 }
+
+export function solvePart2(input: Input): number {
+  const time = Number(input.lines[0].replace(/^Time:/, "").replaceAll(" ", ""));
+  const record = Number(
+    input.lines[1].replace(/^Distance:/, "").replaceAll(" ", "")
+  );
+
+  let raceWins = 0;
+  for (let startDelay = 1; startDelay < time; startDelay++) {
+    const distance = startDelay * (time - startDelay);
+    if (distance > record) {
+      raceWins++;
+    }
+  }
+
+  return raceWins;
+}

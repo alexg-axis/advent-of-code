@@ -46,3 +46,25 @@ To see how much margin of error you have, determine the __number of ways you can
 
 Determine the number of ways you could beat the record in each race. __What do you get if you multiply these numbers together?__
 
+## --- Part Two ---
+
+As the race is about to start, you realize the piece of paper with race times and record distances you got earlier actually just has very bad (_Keming!_) [kerning](https://en.wikipedia.org/wiki/Kerning). There's really __only one race__ - ignore the spaces between the numbers on each line.
+
+So, the example from before:
+
+```
+Time:      7  15   30
+Distance:  9  40  200
+```
+
+...now instead means this:
+
+```
+Time:      71530
+Distance:  940200
+```
+
+Now, you have to figure out how many ways there are to win this single race. In this example, the race lasts for __`71530` milliseconds__ and the record distance you need to beat is __`940200` millimeters__. You could hold the button anywhere from `14` to `71516` milliseconds and beat the record, a total of `71503` ways!
+
+__How many ways can you beat the record in this one much longer race?__
+
