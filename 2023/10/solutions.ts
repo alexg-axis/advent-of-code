@@ -1,3 +1,6 @@
+import { createCanvas } from "https://deno.land/x/canvas/mod.ts";
+import * as path from "https://deno.land/std@0.188.0/path/mod.ts";
+
 import { Input } from "../../utils/deno/input.ts";
 
 // - `|` is a __vertical pipe__ connecting north and south.
@@ -157,4 +160,85 @@ export function solvePart1(input: Input): number {
   }
 
   return maximums.flat().sort((a, b) => b - a)[0];
+}
+
+export function solvePart2(input: Input): number {
+  const graph = parseGraph(input);
+
+  const canvas = createCanvas(
+    graph.nodes[0].length * 3,
+    graph.nodes.length * 3
+  );
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, graph.nodes[0].length * 3, graph.nodes.length * 3);
+  ctx.fillStyle = "white";
+  ctx.strokeStyle = "white";
+
+  let visited = graph.nodes.map((x) => x.map(() => 0));
+  let toVisit: Coordinate[] = [graph.start];
+  while (toVisit.length > 0) {
+    const [x, y] = toVisit.shift()!;
+    // Paint the cell itself
+    ctx.fillRect(x * 3 + 1, y * 3 + 1, 1, 1);
+
+    for (const [nextX, nextY] of graph.nodes[y][x].adjacent) {
+      // Connect with adjacent
+      ctx.fillStyle = "red";
+      ctx.fillRect(
+        Math.min(x, nextX) * 3,
+        Math.min(y, nextY) * 3,
+        Math.max(Math.abs(x - (nextX + 1)) * 3, 3),
+        Math.max(Math.abs(y - (nextY + 1)) * 3, 3)
+      );
+
+      if (visited[nextY][nextX]) {
+        continue;
+      }
+
+      visited[nextY][nextX] = 1;
+      toVisit.push([nextX, nextY]);
+    }
+  }
+
+  visited = graph.nodes.map((x) => x.map(() => 0));
+  toVisit = [graph.start];
+  while (toVisit.length > 0) {
+    const [x, y] = toVisit.shift()!;
+    // Paint the cell itself
+    ctx.fillRect(x * 3 + 1, y * 3 + 1, 1, 1);
+
+    for (const [nextX, nextY] of graph.nodes[y][x].adjacent) {
+      // Connect with adjacent
+      ctx.fillStyle = "white";
+      ctx.fillRect(
+        Math.min(x, nextX) * 3 + 1,
+        Math.min(y, nextY) * 3 + 1,
+        Math.max(Math.abs(x - nextX) * 3, 1),
+        Math.max(Math.abs(y - nextY) * 3, 1)
+      );
+
+      if (visited[nextY][nextX]) {
+        continue;
+      }
+
+      visited[nextY][nextX] = 1;
+      toVisit.push([nextX, nextY]);
+    }
+  }
+
+  Deno.writeFile(
+    path.join(path.dirname(path.fromFileUrl(import.meta.url)), "out.png"),
+    canvas.toBuffer()
+  );
+
+  console.log("1. Open out.png in photo editor");
+  console.log("2. Make all red pixels black");
+  console.log("3. Select and remove all surrounding black pixels");
+  console.log("4. Select and remove all white pixels");
+  console.log("5. Count black pixels");
+  console.log("6. Divide by 9");
+
+  return -1;
 }
