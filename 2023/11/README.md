@@ -105,3 +105,13 @@ In this example, after expanding the universe, the sum of the shortest path betw
 
 Expand the universe, then find the length of the shortest path between every pair of galaxies. __What is the sum of these lengths?__
 
+## --- Part Two ---
+
+The galaxies are much __older__ (and thus much __farther apart__) than the researcher initially estimated.
+
+Now, instead of the expansion you did before, make each empty row or column __one million (_And you have to have your pinky near your mouth when you do it._) times__ larger. That is, each empty row should be replaced with `1000000` empty rows, and each empty column should be replaced with `1000000` empty columns.
+
+(In the example above, if each empty row or column were merely `10` times larger, the sum of the shortest paths between every pair of galaxies would be `1030`. If each empty row or column were merely `100` times larger, the sum of the shortest paths between every pair of galaxies would be `8410`. However, your universe will need to expand far beyond these values.)
+
+Starting with the same initial image, expand the universe according to these new rules, then find the length of the shortest path between every pair of galaxies. __What is the sum of these lengths?__
+
