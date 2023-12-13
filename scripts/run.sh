@@ -28,7 +28,7 @@ for file in $main_files; do
     go run "$file"
     ;;
   "ts")
-    NO_COLOR=1 deno run --quiet --allow-read --allow-write "$file"
+    NO_COLOR=1 deno run --quiet --allow-read --allow-write --allow-hrtime "$file"
     ;;
   "py")
     export PYTHONPATH="$PWD/utils/python/:$PYTHONPATH"

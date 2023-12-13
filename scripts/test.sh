@@ -26,7 +26,7 @@ for file in $main_files; do
   pushd "$directory"
   case "${name##*.}" in
   "ts")
-    NO_COLOR=1 deno test --allow-read --allow-write
+    NO_COLOR=1 deno test --allow-read --allow-write --allow-hrtime
     ;;
   *)
     echo "unsupported $file"
