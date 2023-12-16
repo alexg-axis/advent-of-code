@@ -1,31 +1,30 @@
+import { combinations } from "https://deno.land/x/combinatorics@1.0.1/combinations.ts";
 import { Input } from "../../utils/deno/input.ts";
 
-function hash(x: string): number {
-  let currentValue = 0;
-  for (let i = 0; i < x.length; i++) {
-    currentValue += x.charCodeAt(i);
-    currentValue *= 17;
-    currentValue %= 256;
-  }
-  return currentValue;
+type Map = ("." | "/" | "\\" | "|" | "-")[][];
+
+function isWithinBounds(map: Map, x: number, y: number): boolean {
+  return x >= 0 && x < map[0].length && y >= 0 && y < map.length;
 }
 
-export function solvePart1(input: Input): number {
-  const map = input.lines.map(
-    (x) => x.split("") as ("." | "/" | "\\" | "|" | "-")[]
-  );
+function solve(
+  map: Map,
+  [[x, y], [dx, dy]]: [[number, number], [number, number]]
+): number {
+  if (!isWithinBounds(map, x + dx, y + dy)) {
+    return -1;
+  }
 
   const filled = new Array(map.length)
     .fill(null)
     .map(() => new Array(map[0].length).fill(0));
-  filled[0][0] = 1;
 
   const seen: Record<string, boolean> = {};
 
   const beams: [[number, number], [number, number]][] = [
     [
-      [-1, 0],
-      [1, 0],
+      [x, y],
+      [dx, dy],
     ],
   ];
   for (let i = 0; i < 1e9 && beams.length > 0; i++) {
@@ -148,4 +147,61 @@ export function solvePart1(input: Input): number {
   // );
 
   return filled.map((x) => x.filter((x) => x > 0)).flat().length;
+}
+
+export function solvePart1(input: Input): number {
+  const map = input.lines.map(
+    (x) => x.split("") as ("." | "/" | "\\" | "|" | "-")[]
+  );
+
+  return solve(map, [
+    [-1, 0],
+    [1, 0],
+  ]);
+}
+
+export function solvePart2(input: Input): number {
+  const map = input.lines.map(
+    (x) => x.split("") as ("." | "/" | "\\" | "|" | "-")[]
+  );
+
+  const possible: number[] = [];
+  for (let y = -1; y <= map.length; y++) {
+    possible.push(
+      solve(
+        [...map.map((x) => [...x])],
+        [
+          [-1, y],
+          [1, 0],
+        ]
+      ),
+      solve(
+        [...map.map((x) => [...x])],
+        [
+          [map[0].length, y],
+          [0, -1],
+        ]
+      )
+    );
+  }
+  for (let x = -1; x <= map[0].length; x++) {
+    possible.push(
+      solve(
+        [...map.map((x) => [...x])],
+        [
+          [x, -1],
+          [0, 1],
+        ]
+      ),
+      solve(
+        [...map.map((x) => [...x])],
+        [
+          [x, map.length],
+          [0, -1],
+        ]
+      )
+    );
+  }
+
+  return possible.sort((a, b) => b - a)[0];
 }
