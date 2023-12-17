@@ -1,79 +1,100 @@
 import { Input } from "../../utils/deno/input.ts";
 
-const shifts = [
-  [+1, 0],
-  [-1, 0],
-  [0, +1],
-  [0, -1],
-];
-
 function isWithinBounds(map: number[][], x: number, y: number): boolean {
   return x >= 0 && x < map[0].length && y >= 0 && y < map.length;
 }
 
-function astar(
+function key([x, y]: [number, number]): string {
+  return `${x}:${y}`;
+}
+
+// Let neighbors be all possible legal moves from this point on
+function shifts(
   map: number[][],
-  start: [number, number],
-  goal: [number, number]
-) {
-  const open: [number, number][] = [start];
-  const previous: Record<string, string> = {};
+  current: [number, number],
+  visited: string[],
+  previous: Record<string, string | null>
+): [number, number][] {
+  // TODO
+  return [
+    [+1, 0],
+    [-1, 0],
+    [0, +1],
+    [0, -1],
+  ].filter(
+    ([x, y]) =>
+      !visited.includes(key([current[0] + x, current[1] + y])) &&
+      isWithinBounds(map, current[0] + x, current[1] + y)
+  ) as [number, number][];
+}
 
-  const g: Record<string, number> = Object.fromEntries(
-    Object.entries(map).map(([k]) => [k, Number.POSITIVE_INFINITY])
+function dijkstra(
+  map: number[][],
+  from: [number, number]
+): Record<string, string | null> {
+  const distances: Record<string, number> = Object.fromEntries(
+    map
+      .map((row, y) =>
+        row.map((_, x) => [`${x}:${y}`, Number.POSITIVE_INFINITY])
+      )
+      .flat()
   );
-  g[`${start[0]}:${start[1]}`] = 0;
+  distances[key(from)] = 0;
 
-  const h = ([x, y]: [number, number]) =>
-    Math.abs(goal[0] - x) + Math.abs(goal[1] - y);
-
-  const d = (a: [number, number], b: [number, number]) => map[b[1]][b[0]];
-
-  const f: Record<string, number> = Object.fromEntries(
-    Object.entries(map).map(([k]) => [k, Number.POSITIVE_INFINITY])
+  const previous: Record<string, string | null> = Object.fromEntries(
+    map.map((row, y) => row.map((_, x) => [`${x}:${y}`, null])).flat()
   );
-  f[`${start[0]}:${start[1]}`] = h(start);
+
+  const open: [number, number][] = [];
+  open.push(from);
+
+  const visited: string[] = [key(from)];
 
   while (open.length > 0) {
     const current = open
-      .sort((a, b) => f[`${a[0]}:${a[1]}`] - f[`${b[0]}:${b[1]}`])
+      .sort((a, b) => distances[key(a)] - distances[key(b)])
       .shift()!;
+    visited.push(key(current));
 
-    if (current[0] === goal[0] && current[1] === goal[1]) {
-      console.log(previous);
-      return;
-    }
-
-    for (const shift of shifts) {
-      const currentKey = `${current[0]}:${current[1]}`;
-      const neighbour: [number, number] = [
+    for (const shift of shifts(map, current, visited, previous)) {
+      const next: [number, number] = [
         current[0] + shift[0],
         current[1] + shift[1],
       ];
-      if (!isWithinBounds(map, neighbour[0], neighbour[1])) {
+      if (open.find(([x, y]) => x === next[0] && y === next[1])) {
         continue;
       }
+      open.push(next);
 
-      const neighbourKey = `${neighbour[0]}:${neighbour[1]}`;
-      const tentativeG = g[currentKey] + d(current, neighbour);
-      if (tentativeG < g[currentKey]) {
-        previous[neighbourKey] = currentKey;
-        g[neighbourKey] = tentativeG;
-        f[neighbourKey] = tentativeG + h(neighbour);
-        if (!open.find(([x, y]) => x === neighbour[x] && y === neighbour[y])) {
-          open.push(neighbour);
-        }
+      const cost = 1;
+      if (distances[key(current)] + cost < distances[key(next)]) {
+        distances[key(next)] = distances[key(current)] + 1;
+        previous[key(next)] = key(current);
       }
     }
   }
 
-  throw new Error("No path found");
+  return previous;
 }
 
 export function solvePart1(input: Input): number {
   const map = input.lines.map((x) => x.split("").map(Number));
 
-  astar(map, [0, 0], [map[0].length - 1, map.length - 1]);
+  const previous = dijkstra(map, [0, 0]);
+  console.log(previous);
+
+  const path: [number, number][] = [];
+  let next = previous[key([map[0].length - 1, map.length - 1])];
+  while (next !== null) {
+    path.push(next.split(":").map(Number) as [number, number]);
+    next = previous[next];
+  }
+
+  const rendered = input.lines.map((x) => x.split("").fill("."));
+  for (const [x, y] of path) {
+    rendered[y][x] = "#";
+  }
+  console.log(rendered.map((x) => x.join("")).join("\n"));
 
   return -1;
 }
