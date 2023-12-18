@@ -1,22 +1,14 @@
 import { Input } from "../../utils/deno/input.ts";
-import { createCanvas } from "https://deno.land/x/canvas/mod.ts";
-import * as path from "https://deno.land/std@0.188.0/path/mod.ts";
 
-export function solvePart1(input: Input): number {
-  const instructions = input.lines.map((x) => {
-    const [direction, steps, color] = x.split(/ +/);
-    return {
-      direction: direction as "U" | "D" | "L" | "R",
-      steps: Number(steps),
-      color: color.replace(/\(|\)/g, ""),
-    };
-  });
-
+function solve(
+  instructions: { direction: "R" | "D" | "L" | "U"; steps: number }[]
+): number {
   const coordinate = [0, 0];
-  const visited: Record<string, string> = {};
-  visited["0:0"] = "#FFFFFF";
+  const vertices: [number, number][] = [];
 
-  for (const { direction, steps, color } of instructions) {
+  // total boundary area
+  let boundary = 0;
+  for (const { direction, steps } of instructions) {
     const step = [0, 0];
     switch (direction) {
       case "U":
@@ -33,48 +25,50 @@ export function solvePart1(input: Input): number {
         break;
     }
 
-    for (let i = 0; i < steps; i++) {
-      coordinate[0] += step[0];
-      coordinate[1] += step[1];
-      if (!visited[`${coordinate[0]}:${coordinate[1]}`]) {
-        visited[`${coordinate[0]}:${coordinate[1]}`] = color;
-      }
-    }
+    coordinate[0] += step[0] * steps;
+    coordinate[1] += step[1] * steps;
+    vertices.push([...coordinate] as [number, number]);
+    boundary += steps;
   }
 
-  const trench = Object.keys(visited).map(
-    (x) => x.split(":").map(Number) as [number, number]
-  );
-  const minY = trench.toSorted((a, b) => a[1] - b[1])[0][1];
-  const maxY = trench.toSorted((a, b) => b[1] - a[1])[0][1];
-  const globalMinX = trench.toSorted((a, b) => a[0] - b[0])[0][0];
-  const globalMaxX = trench.toSorted((a, b) => b[0] - a[0])[0][0];
-
-  const canvas = createCanvas(globalMaxX - globalMinX + 1, maxY - minY + 1);
-  const ctx = canvas.getContext("2d");
-
-  ctx.fillStyle = "#FF0000";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  for (let y = minY; y <= maxY; y++) {
-    const row = trench
-      .filter(([_, y2]) => y2 === y)
-      .sort((a, b) => a[0] - b[0]);
-    for (const [x, y] of row) {
-      console.log(
-        x + Math.abs(globalMinX),
-        y + Math.abs(minY),
-        visited[`${x}:${y}`]
-      );
-      ctx.fillStyle = visited[`${x}:${y}`];
-      ctx.fillRect(x + Math.abs(globalMinX), y + Math.abs(minY), 1, 1);
-    }
+  // shoelace formula for area of interior points of polygon
+  vertices.push(vertices[0]);
+  let area = 0;
+  for (let i = 0; i < vertices.length - 1; i++) {
+    const [x1, y1] = vertices[i];
+    const [x2, y2] = vertices[i + 1];
+    area += (x2 + x1) * (y2 - y1);
   }
+  const interior = Math.abs(area) / 2;
 
-  Deno.writeFile(
-    path.join(path.dirname(path.fromFileUrl(import.meta.url)), "out.png"),
-    canvas.toBuffer()
-  );
+  // Pick's theorem
+  return interior - boundary / 2 - 1 + boundary + 2;
+}
 
-  return -1;
+export function solvePart1(input: Input): number {
+  const instructions = input.lines.map((x) => {
+    const [direction, steps, color] = x.split(/ +/);
+    return {
+      direction: direction as "R" | "D" | "L" | "U",
+      steps: Number(steps),
+      color: color.replace(/\(|\)/g, ""),
+    };
+  });
+
+  return solve(instructions);
+}
+
+export function solvePart2(input: Input): number {
+  const instructions = input.lines.map((x) => {
+    const [_direction, _steps, color] = x.split(/ +/);
+    const instruction = parseInt(color.substring(2, 8), 16);
+    const steps = instruction >> 4;
+    const direction = ["R", "D", "L", "U"][instruction & 0xf];
+    return {
+      direction: direction as "R" | "D" | "L" | "U",
+      steps: steps,
+    };
+  });
+
+  return solve(instructions);
 }
