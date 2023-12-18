@@ -14,85 +14,84 @@ Deno.test("part 1 - given test case", () => {
   assertEquals(solvePart1(new Input(input)), 21);
 });
 
-Deno.test("part 1 - created test case", () => {
+Deno.test("part 1 - given test case 1", () => {
   const input = `???.### 1,1,3`;
 
   assertEquals(solvePart1(new Input(input)), 1);
 });
 
-Deno.test("part 1 - created test case", () => {
+Deno.test("part 1 - given test case 2", () => {
   const input = `.??..??...?##. 1,1,3`;
 
   assertEquals(solvePart1(new Input(input)), 4);
 });
 
-Deno.test("part 1 - created test case", () => {
+Deno.test("part 1 - given test case 3", () => {
   const input = `?#?#?#?#?#?#?#? 1,3,1,6`;
 
   assertEquals(solvePart1(new Input(input)), 1);
 });
 
-Deno.test("part 1 - created test case", () => {
+Deno.test("part 1 - given test case 4", () => {
   const input = `????.#...#... 4,1,1`;
 
   assertEquals(solvePart1(new Input(input)), 1);
 });
 
-Deno.test("part 1 - created test case", () => {
+Deno.test("part 1 - given test case 5", () => {
   const input = `????.######..#####. 1,6,5`;
 
   assertEquals(solvePart1(new Input(input)), 4);
 });
 
-Deno.test("part 1 - created test case", () => {
+Deno.test("part 1 - given test case 6", () => {
   const input = `?###???????? 3,2,1`;
 
   assertEquals(solvePart1(new Input(input)), 10);
 });
 
-// Deno.test("part 2 - given test case", () => {
-//   const input = `???.### 1,1,3
-// .??..??...?##. 1,1,3
-// ?#?#?#?#?#?#?#? 1,3,1,6
-// ????.#...#... 4,1,1
-// ????.######..#####. 1,6,5
-// ?###???????? 3,2,1`;
+Deno.test("part 2 - given test case", () => {
+  const input = `???.### 1,1,3
+.??..??...?##. 1,1,3
+?#?#?#?#?#?#?#? 1,3,1,6
+????.#...#... 4,1,1
+????.######..#####. 1,6,5
+?###???????? 3,2,1`;
 
-//   assertEquals(solvePart2(new Input(input)), 525152);
-// });
+  assertEquals(solvePart2(new Input(input)), 525152);
+});
 
-Deno.test("part 2 - created test case 1", () => {
+Deno.test("part 2 - given test case 1", () => {
   const input = `???.### 1,1,3`;
 
   assertEquals(solvePart2(new Input(input)), 1);
 });
 
-Deno.test("part 2 - created test case 2", () => {
-  // .??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.?.??..??...?##.
+Deno.test("part 2 - given test case 2", () => {
   const input = `.??..??...?##. 1,1,3`;
 
   assertEquals(solvePart2(new Input(input)), 16384);
 });
 
-Deno.test("part 2 - created test case 3", () => {
+Deno.test("part 2 - given test case 3", () => {
   const input = `?#?#?#?#?#?#?#? 1,3,1,6`;
 
   assertEquals(solvePart2(new Input(input)), 1);
 });
 
-Deno.test("part 2 - created test case 4", () => {
+Deno.test("part 2 - given test case 4", () => {
   const input = `????.#...#... 4,1,1`;
 
   assertEquals(solvePart2(new Input(input)), 16);
 });
 
-Deno.test("part 2 - created test case 5", () => {
+Deno.test("part 2 - given test case 5", () => {
   const input = `????.######..#####. 1,6,5`;
 
   assertEquals(solvePart2(new Input(input)), 2500);
 });
 
-Deno.test("part 2 - created test case 6", () => {
+Deno.test("part 2 - given test case 6", () => {
   const input = `?###???????? 3,2,1`;
 
   assertEquals(solvePart2(new Input(input)), 506250);
@@ -101,5 +100,11 @@ Deno.test("part 2 - created test case 6", () => {
 Deno.test("part 2 - input test case", () => {
   const input = `?#?.??.#?.??? 2,1,1,1`;
 
-  assertEquals(solvePart2(new Input(input)), -1); // TODO
+  assertEquals(solvePart2(new Input(input)), 2778836); // TODO
+});
+
+Deno.test("part 2 - input test case", () => {
+  const input = `?????#.?##?????.??? 5,2,1,1,1`;
+
+  assertEquals(solvePart2(new Input(input)), 2778836); // TODO
 });

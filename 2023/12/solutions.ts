@@ -1,5 +1,4 @@
 import { Input } from "../../utils/deno/input.ts";
-import { combinationsWithReplacement } from "https://deno.land/x/combinatorics@1.0.1/combinations_with_replacement.ts";
 
 interface Report {
   cells: string;
@@ -21,76 +20,74 @@ function expand(report: Report): Report {
   };
 }
 
-function isPossible(cells: string, runs: number[]): boolean {
-  cells += ".";
-  let run = 0;
-  let passed = 0;
-  for (let i = 0; i < cells.length; i++) {
-    if (cells[i] === "#") {
-      passed++;
-    } else if (cells[i] === ".") {
-      if (passed > 0) {
-        if (runs[run] !== passed) {
-          // console.log("run mismatch", passed, run, runs[run]);
-          return false;
-        }
-        run++;
-        passed = 0;
-      }
+const cache: Record<string, number> = {};
+
+// ?????#.?##?????.??? 5,2,1,1,1
+function solve(cells: string, runs: number[], past = 0): number {
+  const key = `${cells}:${runs.join(",")}:${past}`;
+  if (cache[key]) {
+    return cache[key];
+  }
+
+  // Done
+  if (cells.length === 0) {
+    cache[key] = runs.length === 0 ? 1 : 0;
+    return cache[key];
+  }
+
+  if (cells[0] === "#") {
+    if (past + 1 > runs[0]) {
+      // Overrun
+      cache[key] = 0;
+      return cache[key];
     } else {
-      if (passed > runs[run]) {
-        // console.log("run overrun");
-        return false;
-      }
-      // ? - benefit of a doubt - could be possible
-      return true;
+      // Continue run
+      cache[key] = solve(cells.substring(1), runs, past + 1);
+      return cache[key];
     }
   }
 
-  return run === runs.length;
-}
+  if (cells[0] === ".") {
+    // Finish run
+    if (past > 0) {
+      if (runs[0] !== past) {
+        // Run mismatch
+        cache[key] = 0;
+        return cache[key];
+      }
 
-function clean(cells: string): string {
-  return cells.replace(/\.\.+/, ".").replace(/^\.+|\.+$/, "");
-}
-
-function solve(report: Report): number {
-  const queue = [clean(report.cells)];
-  let possible = 0;
-  while (queue.length > 0) {
-    const part = queue.shift()!;
-    if (!isPossible(part, report.runs)) {
-      // console.log(part, report.runs, "not possible");
-      continue;
+      // Move on to next run
+      cache[key] = solve(cells.substring(1), runs.slice(1), 0);
+      return cache[key];
     }
-    // console.log(part, report.runs, "possible");
-    // console.log(part);
 
-    const index = part.indexOf("?");
-    if (index === -1) {
-      possible++;
-    } else {
-      // console.log(part);
-      // console.log(part.substring(0, index) + "." + part.substring(index + 1));
-      // console.log(part.substring(0, index) + "#" + part.substring(index + 1));
-      // console.log();
-      queue.push(
-        clean(part.substring(0, index) + "." + part.substring(index + 1)),
-        clean(part.substring(0, index) + "#" + part.substring(index + 1))
-      );
-    }
+    // Continue empty
+    cache[key] = solve(cells.substring(1), runs, 0);
+    return cache[key];
   }
-  // console.log(possible);
-  // console.log();
-  return possible;
+
+  // Branch possibilities
+  let x = solve("." + cells.substring(1), runs, past);
+  if (past < runs[0]) {
+    x += solve("#" + cells.substring(1), runs, past);
+  }
+  cache[key] = x;
+  return cache[key];
 }
 
 export function solvePart1(input: Input): number {
   const reports = input.lines.map(parseReport);
-  return reports.map(solve).reduce((sum, x) => sum + x);
+  return reports
+    .map((report) => solve(report.cells + ".", report.runs))
+    .reduce((sum, x) => sum + x);
 }
 
 export function solvePart2(input: Input): number {
   const reports = input.lines.map(parseReport).map(expand);
-  return reports.map(solve).reduce((sum, x) => sum + x);
+  return reports
+    .map((report, i) => {
+      console.log(i);
+      return solve(report.cells + ".", report.runs);
+    })
+    .reduce((sum, x) => sum + x);
 }
