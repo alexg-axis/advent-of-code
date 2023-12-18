@@ -20,30 +20,33 @@ function expand(report: Report): Report {
   };
 }
 
-const cache: Record<string, number> = {};
+const cache = new Map<string, number>();
 
 // ?????#.?##?????.??? 5,2,1,1,1
 function solve(cells: string, runs: number[], past = 0): number {
   const key = `${cells}:${runs.join(",")}:${past}`;
-  if (cache[key]) {
-    return cache[key];
+  if (cache.has(key)) {
+    return cache.get(key)!;
   }
 
   // Done
   if (cells.length === 0) {
-    cache[key] = runs.length === 0 ? 1 : 0;
-    return cache[key];
+    const value = runs.length === 0 ? 1 : 0;
+    cache.set(key, value);
+    return value;
   }
 
   if (cells[0] === "#") {
     if (past + 1 > runs[0]) {
       // Overrun
-      cache[key] = 0;
-      return cache[key];
+      const value = 0;
+      cache.set(key, value);
+      return value;
     } else {
       // Continue run
-      cache[key] = solve(cells.substring(1), runs, past + 1);
-      return cache[key];
+      const value = solve(cells.substring(1), runs, past + 1);
+      cache.set(key, value);
+      return value;
     }
   }
 
@@ -52,27 +55,31 @@ function solve(cells: string, runs: number[], past = 0): number {
     if (past > 0) {
       if (runs[0] !== past) {
         // Run mismatch
-        cache[key] = 0;
-        return cache[key];
+        const value = 0;
+        cache.set(key, value);
+        return value;
       }
 
       // Move on to next run
-      cache[key] = solve(cells.substring(1), runs.slice(1), 0);
-      return cache[key];
+      const value = solve(cells.substring(1), runs.slice(1), 0);
+      cache.set(key, value);
+      return value;
     }
 
     // Continue empty
-    cache[key] = solve(cells.substring(1), runs, 0);
-    return cache[key];
+    const value = solve(cells.substring(1), runs, 0);
+    cache.set(key, value);
+    return value;
   }
 
   // Branch possibilities
-  let x = solve("." + cells.substring(1), runs, past);
+  let value = solve("." + cells.substring(1), runs, past);
+  // Branch won't overrun current run
   if (past < runs[0]) {
-    x += solve("#" + cells.substring(1), runs, past);
+    value += solve("#" + cells.substring(1), runs, past);
   }
-  cache[key] = x;
-  return cache[key];
+  cache.set(key, value);
+  return value;
 }
 
 export function solvePart1(input: Input): number {
@@ -85,9 +92,6 @@ export function solvePart1(input: Input): number {
 export function solvePart2(input: Input): number {
   const reports = input.lines.map(parseReport).map(expand);
   return reports
-    .map((report, i) => {
-      console.log(i);
-      return solve(report.cells + ".", report.runs);
-    })
+    .map((report) => solve(report.cells + ".", report.runs))
     .reduce((sum, x) => sum + x);
 }

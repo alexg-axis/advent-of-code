@@ -100,11 +100,11 @@ Deno.test("part 2 - given test case 6", () => {
 Deno.test("part 2 - input test case", () => {
   const input = `?#?.??.#?.??? 2,1,1,1`;
 
-  assertEquals(solvePart2(new Input(input)), 2778836); // TODO
+  assertEquals(solvePart2(new Input(input)), 2778836);
 });
 
 Deno.test("part 2 - input test case", () => {
   const input = `?????#.?##?????.??? 5,2,1,1,1`;
 
-  assertEquals(solvePart2(new Input(input)), 2778836); // TODO
+  assertEquals(solvePart2(new Input(input)), 4313088);
 });
