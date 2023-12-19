@@ -1,17 +1,12 @@
 import { Input } from "../../utils/deno/input.ts";
 
-// Default accept
-type Check =
-  | { type: "reject" }
-  | { type: "accept" }
-  | { type: "goto"; branch: string }
-  | {
-      type: "compare";
-      left: "x" | "m" | "a" | "s";
-      right: number;
-      operator: "<" | ">";
-      positiveBranch: string;
-    };
+interface Edge {
+  condition:
+    | { type: "<"; left: "x" | "m" | "a" | "s"; right: number }
+    | { type: ">"; left: "x" | "m" | "a" | "s"; right: number }
+    | { type: "unconditional" };
+  to: string;
+}
 
 interface Rating {
   x: number;
@@ -21,7 +16,7 @@ interface Rating {
 }
 
 function parseInput(input: Input): {
-  workflows: Record<string, Check[]>;
+  workflows: Record<string, Edge[]>;
   ratings: Rating[];
 } {
   const [workflows, ratings] = input.raw.trim().split(/\n\n/);
@@ -32,7 +27,7 @@ function parseInput(input: Input): {
 }
 
 // vdm{m<3285:R,R}
-function parseWorkflow(workflow: string): [string, Check[]] {
+function parseWorkflow(workflow: string): [string, Edge[]] {
   const [name, part] = workflow.split("{");
   return [name, part.slice(0, -1).split(",").map(parseCheck)];
 }
@@ -47,24 +42,25 @@ function parseRating(rating: string): Rating {
   ) as unknown as Rating;
 }
 
-function parseCheck(check: string): Check {
+function parseCheck(check: string): Edge {
   if (check === "R") {
-    return { type: "reject" };
+    return { condition: { type: "unconditional" }, to: "R" };
   } else if (check === "A") {
-    return { type: "accept" };
+    return { condition: { type: "unconditional" }, to: "A" };
   } else {
     const match = check.match(/(\w+)([<>])(\d+):(.*)/)!;
     if (match) {
       const [_, left, operator, right, positiveBranch] = match;
       return {
-        type: "compare",
-        left: left as "x" | "m" | "a" | "s",
-        right: Number(right),
-        operator: operator as "<" | ">",
-        positiveBranch,
+        condition: {
+          type: operator as "<" | ">",
+          left: left as "x" | "m" | "a" | "s",
+          right: Number(right),
+        },
+        to: positiveBranch,
       };
     } else {
-      return { type: "goto", branch: check };
+      return { condition: { type: "unconditional" }, to: check };
     }
   }
 }
@@ -116,7 +112,7 @@ function solve(
 
 function isAccepted(
   ratings: Rating,
-  workflows: Record<string, Check[]>
+  workflows: Record<string, Edge[]>
 ): boolean {
   let current = "in";
   for (let i = 0; i < 1e3; i++) {
@@ -131,29 +127,22 @@ function isAccepted(
 
     const checks = workflows[current];
     checkLoop: for (const check of checks) {
-      switch (check.type) {
-        case "accept":
-          return true;
-        case "reject":
-          return false;
-        case "goto":
-          current = check.branch;
+      switch (check.condition.type) {
+        case "unconditional":
+          current = check.to;
           break checkLoop;
-        case "compare":
-          switch (check.operator) {
-            case "<":
-              if (ratings[check.left] < check.right) {
-                current = check.positiveBranch;
-                break checkLoop;
-              }
-              break;
-            case ">":
-              if (ratings[check.left] > check.right) {
-                current = check.positiveBranch;
-                break checkLoop;
-              }
-              break;
+        case "<":
+          if (ratings[check.condition.left] < check.condition.right) {
+            current = check.to;
+            break checkLoop;
           }
+          break;
+        case ">":
+          if (ratings[check.condition.left] > check.condition.right) {
+            current = check.to;
+            break checkLoop;
+          }
+          break;
       }
     }
   }
@@ -169,117 +158,51 @@ export function solvePart1(input: Input): number {
   return accepted.reduce((sum, x) => sum + x.x + x.m + x.a + x.s, 0);
 }
 
-interface Edge {
-  condition:
-    | { type: "<"; left: "x" | "m" | "a" | "s"; right: number }
-    | { type: ">"; left: "x" | "m" | "a" | "s"; right: number }
-    | { type: "unconditional" };
-  to: string;
-}
-
 export function solvePart2(input: Input): number {
   const { workflows } = parseInput(input);
 
-  // Build a reverse graph, starting from A and R
-  const graph: Record<string, Edge[]> = Object.fromEntries(
-    Object.keys(workflows).map((x) => [x, []])
-  );
-  graph["A"] = [];
-  graph["R"] = [];
+  // Work through all workflows, splitting ranges at conditional
+  let sum = 0;
+  const queue: [string, Record<"x" | "m" | "a" | "s", [number, number]>][] = [
+    ["in", { x: [1, 4000], m: [1, 4000], a: [1, 4000], s: [1, 4000] }],
+  ];
+  while (queue.length > 0) {
+    const [current, ratings] = queue.shift()!;
+    if (current === "R") {
+      continue;
+    } else if (current === "A") {
+      sum += Object.values(ratings)
+        .map(([a, b]) => b - a + 1)
+        .reduce((prod, x) => prod * x, 1);
+      continue;
+    }
 
-  for (const [from, checks] of Object.entries(workflows)) {
-    for (const check of checks) {
-      switch (check.type) {
-        case "accept":
-          graph[from].push({
-            condition: { type: "unconditional" },
-            to: "A",
-          });
-          break;
-        case "reject":
-          graph[from].push({
-            condition: { type: "unconditional" },
-            to: "R",
-          });
-          break;
-        case "goto":
-          graph[from].push({
-            condition: { type: "unconditional" },
-            to: check.branch,
-          });
-          break;
-        case "compare":
-          graph[from].push({
-            condition: {
-              type: check.operator,
-              left: check.left,
-              right: check.right,
-            },
-            to: check.positiveBranch,
-          });
-          break;
+    for (const edge of workflows[current]) {
+      const newRatings: Record<"x" | "m" | "a" | "s", [number, number]> = {
+        x: [...ratings.x],
+        m: [...ratings.m],
+        a: [...ratings.a],
+        s: [...ratings.s],
+      };
+      if (edge.condition.type === "unconditional") {
+        queue.push([edge.to, newRatings]);
+        continue;
       }
+
+      if (edge.condition.type === "<") {
+        // Split - positive branch's highest is highest value that fulfills
+        // condition, thenegative branch's lowest is the lowest value that
+        // doesn't fulfill the condition
+        newRatings[edge.condition.left][1] = edge.condition.right - 1;
+        ratings[edge.condition.left][0] = edge.condition.right;
+      } else if (edge.condition.type === ">") {
+        // Like above, but reversed
+        newRatings[edge.condition.left][0] = edge.condition.right + 1;
+        ratings[edge.condition.left][1] = edge.condition.right;
+      }
+      queue.push([edge.to, newRatings]);
     }
   }
 
-  // Find all the paths from "in" to "A"
-  const paths: Edge[][] = [];
-  const visited: string[] = [];
-
-  const util = (current: Edge, path: Edge[]) => {
-    visited.push(current.to);
-    path.push(current);
-    if (current.to === "A") {
-      paths.push([...path]);
-    } else {
-      for (const neighbour of graph[current.to]) {
-        if (!visited.includes(neighbour.to)) {
-          util(neighbour, [...path]);
-        }
-      }
-    }
-
-    path.pop();
-    visited.splice(visited.indexOf(current.to), 1);
-  };
-  for (const edge of graph["in"]) {
-    util(edge, []);
-  }
-
-  // For each possible path, calculate possible combinations
-  for (const path of paths) {
-    const min: Record<"x" | "m" | "a" | "s", number> = {
-      x: 1,
-      m: 1,
-      a: 1,
-      s: 1,
-    };
-    const max: Record<"x" | "m" | "a" | "s", number> = {
-      x: 4000,
-      m: 4000,
-      a: 4000,
-      s: 4000,
-    };
-    for (const edge of path) {
-      switch (edge.condition.type) {
-        case "unconditional":
-          continue;
-        case "<":
-          max[edge.condition.left] = Math.min(
-            max[edge.condition.left],
-            edge.condition.right
-          );
-          break;
-        case ">":
-          min[edge.condition.left] = Math.max(
-            min[edge.condition.left],
-            edge.condition.right
-          );
-          break;
-      }
-    }
-    console.log(min, max);
-  }
-
-  return -1;
+  return sum;
 }
