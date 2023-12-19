@@ -168,3 +168,118 @@ export function solvePart1(input: Input): number {
 
   return accepted.reduce((sum, x) => sum + x.x + x.m + x.a + x.s, 0);
 }
+
+interface Edge {
+  condition:
+    | { type: "<"; left: "x" | "m" | "a" | "s"; right: number }
+    | { type: ">"; left: "x" | "m" | "a" | "s"; right: number }
+    | { type: "unconditional" };
+  to: string;
+}
+
+export function solvePart2(input: Input): number {
+  const { workflows } = parseInput(input);
+
+  // Build a reverse graph, starting from A and R
+  const graph: Record<string, Edge[]> = Object.fromEntries(
+    Object.keys(workflows).map((x) => [x, []])
+  );
+  graph["A"] = [];
+  graph["R"] = [];
+
+  for (const [from, checks] of Object.entries(workflows)) {
+    for (const check of checks) {
+      switch (check.type) {
+        case "accept":
+          graph[from].push({
+            condition: { type: "unconditional" },
+            to: "A",
+          });
+          break;
+        case "reject":
+          graph[from].push({
+            condition: { type: "unconditional" },
+            to: "R",
+          });
+          break;
+        case "goto":
+          graph[from].push({
+            condition: { type: "unconditional" },
+            to: check.branch,
+          });
+          break;
+        case "compare":
+          graph[from].push({
+            condition: {
+              type: check.operator,
+              left: check.left,
+              right: check.right,
+            },
+            to: check.positiveBranch,
+          });
+          break;
+      }
+    }
+  }
+
+  // Find all the paths from "in" to "A"
+  const paths: Edge[][] = [];
+  const visited: string[] = [];
+
+  const util = (current: Edge, path: Edge[]) => {
+    visited.push(current.to);
+    path.push(current);
+    if (current.to === "A") {
+      paths.push([...path]);
+    } else {
+      for (const neighbour of graph[current.to]) {
+        if (!visited.includes(neighbour.to)) {
+          util(neighbour, [...path]);
+        }
+      }
+    }
+
+    path.pop();
+    visited.splice(visited.indexOf(current.to), 1);
+  };
+  for (const edge of graph["in"]) {
+    util(edge, []);
+  }
+
+  // For each possible path, calculate possible combinations
+  for (const path of paths) {
+    const min: Record<"x" | "m" | "a" | "s", number> = {
+      x: 1,
+      m: 1,
+      a: 1,
+      s: 1,
+    };
+    const max: Record<"x" | "m" | "a" | "s", number> = {
+      x: 4000,
+      m: 4000,
+      a: 4000,
+      s: 4000,
+    };
+    for (const edge of path) {
+      switch (edge.condition.type) {
+        case "unconditional":
+          continue;
+        case "<":
+          max[edge.condition.left] = Math.min(
+            max[edge.condition.left],
+            edge.condition.right
+          );
+          break;
+        case ">":
+          min[edge.condition.left] = Math.max(
+            min[edge.condition.left],
+            edge.condition.right
+          );
+          break;
+      }
+    }
+    console.log(min, max);
+  }
+
+  return -1;
+}
