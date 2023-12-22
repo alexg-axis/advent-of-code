@@ -1,136 +1,104 @@
 import { Input } from "../../utils/deno/input.ts";
 
-type Coordinate = [number, number];
-
-type Map = number[][];
-
-function isWithinBounds(map: Map, x: number, y: number): boolean {
-  return x >= 0 && x < map[0].length && y >= 0 && y < map.length;
-}
-
-function key([x, y]: Coordinate): string {
-  return `${x}:${y}`;
-}
-
-function getPath(
-  previous: Record<string, string | null>,
-  from: Coordinate,
-  steps = Number.POSITIVE_INFINITY
-): Coordinate[] {
-  const path: Coordinate[] = [from];
-  let next = previous[key(from)];
-  for (let i = 0; i < steps - 1 && next !== null; i++) {
-    path.push(next.split(":").map(Number) as Coordinate);
-    next = previous[next];
-  }
-  return path;
-}
-
-// Let neighbors be all possible legal moves from this point on
-function shifts(
-  map: Map,
-  current: Coordinate,
-  visited: string[],
-  previous: Record<string, string | null>
-): Coordinate[] {
-  // Shift from the past three moves
-  const history = getPath(previous, current, 3);
-
-  const direction =
-    history.length < 2
-      ? [0, 0]
-      : [
-          current[0] - history[history.length - 1][0],
-          current[1] - history[history.length - 1][1],
-        ];
-
-  const past = history.reduce(
-    (sum, [x, y]) => [sum[0] + x, sum[1] + y],
-    [0, 0]
-  );
-
-  // TODO - filter by allowed direction
-  return [
-    [+1, 0],
-    [-1, 0],
-    [0, +1],
-    [0, -1],
-  ].filter(
-    ([x, y]) =>
-      // Not visited
-      !visited.includes(key([current[0] + x, current[1] + y])) &&
-      // Possible
-      isWithinBounds(map, current[0] + x, current[1] + y) &&
-      // Not straight line
-      past[0] + x <= 3 &&
-      past[1] + y <= 3
-  ) as Coordinate[];
-}
-
-function dijkstra(map: Map, from: Coordinate): Record<string, string | null> {
-  const rendered = map.map((x) => new Array(x.length).fill("."));
-  const distances: Record<string, number> = Object.fromEntries(
-    map
-      .map((row, y) =>
-        row.map((_, x) => [key([x, y]), Number.POSITIVE_INFINITY])
-      )
-      .flat()
-  );
-  distances[key(from)] = 0;
-
-  const previous: Record<string, string | null> = Object.fromEntries(
-    map.map((row, y) => row.map((_, x) => [key([x, y]), null])).flat()
-  );
-
-  const open: Coordinate[] = [];
-  open.push(from);
-
-  const visited: string[] = [key(from)];
-
-  while (open.length > 0) {
-    const current = open
-      .sort((a, b) => distances[key(a)] - distances[key(b)])
-      .shift()!;
-    visited.push(key(current));
-
-    for (const shift of shifts(map, current, visited, previous)) {
-      const next: Coordinate = [current[0] + shift[0], current[1] + shift[1]];
-      if (open.find(([x, y]) => x === next[0] && y === next[1])) {
-        continue;
-      }
-      open.push(next);
-      rendered[next[1]][next[0]] = "#";
-      console.log(rendered.map((x) => x.join("")).join("\n"));
-      console.log();
-
-      const cost = map[next[1]][next[0]];
-      if (distances[key(current)] + cost < distances[key(next)]) {
-        distances[key(next)] = distances[key(current)] + cost;
-        previous[key(next)] = key(current);
-      }
-    }
-  }
-
-  return previous;
-}
+type Vec2 = [number, number];
 
 export function solvePart1(input: Input): number {
   const map = input.lines.map((x) => x.split("").map(Number));
 
-  const previous = dijkstra(map, [0, 0]);
+  // TODO: Track cheapest way for each time visited, terminate branch if cheaper
+  // before
+  const cache: Map<string, number> = new Map();
 
-  // TODO: The start node should not be included
-  const path = getPath(previous, [map[0].length - 1, map.length - 1]);
-  console.log(path);
+  let minCost = Number.MAX_VALUE;
+  let minPath: [number, number, number, number][] = [];
+  const util = (
+    [x, y]: Vec2,
+    visited: string[],
+    history: [number, number],
+    direction: [number, number],
+    path: [number, number, number, number][],
+    cost: number
+  ) => {
+    // Goal
+    if (x === map[0].length - 1 && y == map.length - 1) {
+      // console.log(cost);
+      if (cost < minCost) {
+        minCost = cost;
+        minPath = path;
+      }
+      return cost;
+    }
+    const key = `${x}:${y},${history.join(":")},${direction.join(":")}`;
+    const existing = cache.get(key);
+    if (typeof existing !== "undefined" && existing < cost) {
+      return cost;
+    }
+    cache.set(key, cost);
 
-  let heatLoss = 0;
-  console.log(path);
-  const rendered = input.lines.map((x) => x.split("").fill("."));
-  for (const [x, y] of path) {
-    rendered[y][x] = "#";
-    heatLoss += map[y][x];
+    // console.log("at", x, y);
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ]) {
+      const nx = x + dx;
+      const ny = y + dy;
+      // Out of bounds
+      if (nx < 0 || nx >= map[0].length || ny < 0 || ny >= map.length) {
+        // console.log("  ", nx, ny, "out of bounds");
+        continue;
+      }
+      // Illegal - too many straight moves
+      if (Math.abs(history[0] + dx) >= 3 || Math.abs(history[1] + dy) >= 3) {
+        // console.log("  ", nx, ny, "too many straight moves");
+        continue;
+      }
+      // Illegal - backwards
+      if (
+        (direction[0] !== 0 && direction[0] === -dx) ||
+        (direction[1] !== 0 && direction[1] === -dy)
+      ) {
+        // console.log("  ", nx, ny, "backwards");
+        continue;
+      }
+      // Visited
+      const key = `${nx}:${ny}`;
+      if (visited.includes(key)) {
+        // console.log("  ", nx, ny, "visited");
+        continue;
+      }
+      // console.log("  ", nx, ny, "ok");
+      util(
+        [nx, ny],
+        [...visited, key],
+        // Empty history when turning
+        direction[0] === dx && direction[1] === dy
+          ? [history[0] + dx, history[1] + dy]
+          : [0, 0],
+        [dx, dy],
+        [...path, [nx, ny, dx, dy]],
+        cost + map[ny][nx]
+      );
+    }
+  };
+  util([0, 0], ["0:0"], [0, 0], [1, 0], [], 0);
+
+  const rendered = map.map((x) => x.map((x) => x.toString()));
+  for (const [x, y, dx, dy] of minPath) {
+    let mark = " ";
+    if (dx === 1) {
+      mark = ">";
+    } else if (dx === -1) {
+      mark = "<";
+    } else if (dy === 1) {
+      mark = "v";
+    } else if (dy === -1) {
+      mark = "^";
+    }
+    rendered[y][x] = mark;
   }
   console.log(rendered.map((x) => x.join("")).join("\n"));
 
-  return heatLoss;
+  return minCost;
 }
