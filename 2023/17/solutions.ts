@@ -1,37 +1,39 @@
 import { Input } from "../../utils/deno/input.ts";
 
-type Vec2 = [number, number];
+type State = [
+  [number, number],
+  string[],
+  [number, number],
+  [number, number],
+  [number, number, number, number][],
+  number
+];
 
 export function solvePart1(input: Input): number {
   const map = input.lines.map((x) => x.split("").map(Number));
 
-  // TODO: Track cheapest way for each time visited, terminate branch if cheaper
-  // before
   const cache: Map<string, number> = new Map();
-
   let minCost = Number.MAX_VALUE;
   let minPath: [number, number, number, number][] = [];
-  const util = (
-    [x, y]: Vec2,
-    visited: string[],
-    history: [number, number],
-    direction: [number, number],
-    path: [number, number, number, number][],
-    cost: number
-  ) => {
-    // Goal
+
+  const queue: State[] = [[[0, 0], ["0:0"], [0, 0], [1, 0], [], 0]];
+  while (queue.length > 0) {
+    queue.sort((a, b) => a[5] - b[5]);
+    const [[x, y], visited, history, direction, path, cost] = queue.shift()!;
+    console.log((x + y) / (map[0].length + map.length));
     if (x === map[0].length - 1 && y == map.length - 1) {
       // console.log(cost);
       if (cost < minCost) {
         minCost = cost;
         minPath = path;
       }
-      return cost;
+      continue;
     }
+
     const key = `${x}:${y},${history.join(":")},${direction.join(":")}`;
     const existing = cache.get(key);
     if (typeof existing !== "undefined" && existing < cost) {
-      return cost;
+      continue;
     }
     cache.set(key, cost);
 
@@ -69,7 +71,7 @@ export function solvePart1(input: Input): number {
         continue;
       }
       // console.log("  ", nx, ny, "ok");
-      util(
+      queue.push([
         [nx, ny],
         [...visited, key],
         // Empty history when turning
@@ -78,11 +80,10 @@ export function solvePart1(input: Input): number {
           : [0, 0],
         [dx, dy],
         [...path, [nx, ny, dx, dy]],
-        cost + map[ny][nx]
-      );
+        cost + map[ny][nx],
+      ]);
     }
-  };
-  util([0, 0], ["0:0"], [0, 0], [1, 0], [], 0);
+  }
 
   const rendered = map.map((x) => x.map((x) => x.toString()));
   for (const [x, y, dx, dy] of minPath) {
