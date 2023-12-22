@@ -1,49 +1,70 @@
 import { Input } from "../../utils/deno/input.ts";
 
-type State = [
-  [number, number],
-  string[],
-  [number, number],
-  [number, number],
-  [number, number, number, number][],
-  number
+interface State {
+  position: [number, number];
+  direction: [number, number];
+  history: [number, number];
+}
+
+const shifts = [
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
 ];
+
+function stateKey(state: State): string {
+  return `${state.position.join(":")},${state.direction.join(
+    ":"
+  )},${state.history.join(":")}`;
+}
 
 export function solvePart1(input: Input): number {
   const map = input.lines.map((x) => x.split("").map(Number));
 
-  const cache: Map<string, number> = new Map();
-  let minCost = Number.MAX_VALUE;
-  let minPath: [number, number, number, number][] = [];
+  const start: State = { position: [0, 0], direction: [1, 0], history: [0, 0] };
 
-  const queue: State[] = [[[0, 0], ["0:0"], [0, 0], [1, 0], [], 0]];
+  const vertices = map
+    .map((row, y) =>
+      row.map((_, x) => {
+        const result: State[] = [];
+        for (const shift of shifts) {
+          for (let i = 0; i < 2; i++) {
+            for (const consecutive of [0, 1, 2, 3]) {
+              const history: [number, number] = [0, 0];
+              history[i] = consecutive;
+              result.push({
+                position: [x, y],
+                direction: [...shift] as [number, number],
+                history,
+              });
+            }
+          }
+        }
+        return result;
+      })
+    )
+    .flat(2);
+
+  const distances = new Map(
+    vertices.map((state) => [stateKey(state), Number.MAX_VALUE])
+  );
+  distances.set(stateKey(start), 0);
+
+  const queue: State[] = [...vertices];
   while (queue.length > 0) {
-    queue.sort((a, b) => a[5] - b[5]);
-    const [[x, y], visited, history, direction, path, cost] = queue.shift()!;
-    console.log((x + y) / (map[0].length + map.length));
-    if (x === map[0].length - 1 && y == map.length - 1) {
-      // console.log(cost);
-      if (cost < minCost) {
-        minCost = cost;
-        minPath = path;
-      }
-      continue;
-    }
+    console.log(queue.length / vertices.length);
+    const current = queue
+      .sort((a, b) => distances.get(stateKey(a))! - distances.get(stateKey(b))!)
+      .shift()!;
 
-    const key = `${x}:${y},${history.join(":")},${direction.join(":")}`;
-    const existing = cache.get(key);
-    if (typeof existing !== "undefined" && existing < cost) {
-      continue;
-    }
-    cache.set(key, cost);
+    const { position, direction, history } = current;
 
-    // console.log("at", x, y);
-    for (const [dx, dy] of [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ]) {
+    const [x, y] = position;
+
+    const currentCost = distances.get(stateKey(current))!;
+
+    for (const [dx, dy] of shifts) {
       const nx = x + dx;
       const ny = y + dy;
       // Out of bounds
@@ -64,42 +85,50 @@ export function solvePart1(input: Input): number {
         // console.log("  ", nx, ny, "backwards");
         continue;
       }
-      // Visited
-      const key = `${nx}:${ny}`;
-      if (visited.includes(key)) {
-        // console.log("  ", nx, ny, "visited");
-        continue;
-      }
-      // console.log("  ", nx, ny, "ok");
-      queue.push([
-        [nx, ny],
-        [...visited, key],
+
+      const next: State = {
+        position: [nx, ny],
+        direction: [dx, dy],
         // Empty history when turning
-        direction[0] === dx && direction[1] === dy
-          ? [history[0] + dx, history[1] + dy]
-          : [0, 0],
-        [dx, dy],
-        [...path, [nx, ny, dx, dy]],
-        cost + map[ny][nx],
-      ]);
+        history:
+          direction[0] === dx && direction[1] === dy
+            ? [history[0] + dx, history[1] + dy]
+            : [0, 0],
+      };
+      const nextKey = stateKey(next);
+
+      const cost = currentCost + map[ny][nx];
+
+      if (cost < distances.get(nextKey)!) {
+        distances.set(nextKey, cost);
+      }
     }
   }
 
-  const rendered = map.map((x) => x.map((x) => x.toString()));
-  for (const [x, y, dx, dy] of minPath) {
-    let mark = " ";
-    if (dx === 1) {
-      mark = ">";
-    } else if (dx === -1) {
-      mark = "<";
-    } else if (dy === 1) {
-      mark = "v";
-    } else if (dy === -1) {
-      mark = "^";
+  const goals: string[] = [];
+  for (const shift of shifts) {
+    for (let i = 0; i < 2; i++) {
+      for (const consecutive of [0, 1, 2, 3]) {
+        const history: [number, number] = [0, 0];
+        history[i] = consecutive;
+        goals.push(
+          stateKey({
+            position: [map[0].length - 1, map.length - 1],
+            direction: [...shift] as [number, number],
+            history,
+          })
+        );
+      }
     }
-    rendered[y][x] = mark;
   }
-  console.log(rendered.map((x) => x.join("")).join("\n"));
 
-  return minCost;
+  let min = Number.MAX_VALUE;
+  for (const goal of goals) {
+    const steps = distances.get(goal)!;
+    if (steps < min) {
+      min = steps;
+    }
+  }
+
+  return min;
 }
