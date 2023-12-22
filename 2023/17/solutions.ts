@@ -1,3 +1,4 @@
+import { BinaryHeap } from "https://deno.land/std@0.177.0/collections/binary_heap.ts";
 import { Input } from "../../utils/deno/input.ts";
 
 interface State {
@@ -51,12 +52,15 @@ export function solvePart1(input: Input): number {
   );
   distances.set(stateKey(start), 0);
 
-  const queue: State[] = [...vertices];
+  const queue = new BinaryHeap<State>(
+    (a, b) => distances.get(stateKey(a))! - distances.get(stateKey(b))!
+  );
+  for (const vertice of vertices) {
+    queue.push(vertice);
+  }
+
   while (queue.length > 0) {
-    console.log(queue.length / vertices.length);
-    const current = queue
-      .sort((a, b) => distances.get(stateKey(a))! - distances.get(stateKey(b))!)
-      .shift()!;
+    const current = queue.pop()!;
 
     const { position, direction, history } = current;
 
@@ -101,6 +105,7 @@ export function solvePart1(input: Input): number {
 
       if (cost < distances.get(nextKey)!) {
         distances.set(nextKey, cost);
+        queue.push(next);
       }
     }
   }
@@ -130,5 +135,6 @@ export function solvePart1(input: Input): number {
     }
   }
 
+  // Random off by one for input.txt here...
   return min;
 }
