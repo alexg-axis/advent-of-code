@@ -32,7 +32,7 @@ function collides(a: Brick, b: Brick): boolean {
 }
 
 function dropAll(bricks: Brick[]): number {
-  let dropped = 0;
+  const dropped = new Set<number>();
   let changed = -1;
   while (changed !== 0) {
     changed = 0;
@@ -61,13 +61,13 @@ function dropAll(bricks: Brick[]): number {
         }
       }
       if (!collision) {
-        dropped++;
+        dropped.add(i);
         bricks[i].position[2]--;
         changed++;
       }
     }
   }
-  return dropped;
+  return dropped.size;
 }
 
 export function solvePart1(input: Input): number {
@@ -108,4 +108,42 @@ export function solvePart1(input: Input): number {
   }
 
   return safe;
+}
+
+export function solvePart2(input: Input): number {
+  const bricks = input.lines
+    .map(
+      (x) => x.split("~").map((x) => x.split(",").map(Number)) as [Vec3, Vec3]
+    )
+    .map(
+      ([start, end]) =>
+        ({
+          // z=0 === ground, z=1 lowest coordinate of a brick
+          position: [start[0], start[1], start[2] - 1],
+          volume: [
+            end[0] - start[0] + 1,
+            end[1] - start[1] + 1,
+            end[2] - start[2] + 1,
+          ],
+        } as Brick)
+    )
+    .sort((a, b) => b.position[2] - a.position[2]);
+  dropAll(bricks);
+
+  let sum = 0;
+  for (let i = 0; i < bricks.length; i++) {
+    const copy = [
+      ...bricks.map(
+        (x) =>
+          ({
+            position: [...x.position],
+            volume: [...x.volume],
+          } as Brick)
+      ),
+    ];
+    copy.splice(i, 1);
+    sum += dropAll(copy);
+  }
+
+  return sum;
 }
