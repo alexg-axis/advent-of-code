@@ -1,40 +1,20 @@
-import { BinaryHeap } from "https://deno.land/std@0.177.0/collections/binary_heap.ts";
 import { Input } from "../../utils/deno/input.ts";
 
 // Path, forest, slopes
 type Cell = "." | "#" | "^" | "<" | ">" | "v";
 
-function dijkstra(map: Cell[][], start: [number, number]) {
-  const distances = new Map<string, number>();
-  for (let y = 0; y < map.length; y++) {
-    for (let x = 0; x < map[y].length; x++) {
-      if (map[y][x] !== "#") {
-        distances.set(`${x}:${y}`, Number.NEGATIVE_INFINITY);
-      }
-    }
-  }
-  distances.set(`${start[0]}:${start[1]}`, 0);
+function dfs(map: Cell[][], from: [number, number], to: [number, number]) {
+  const visited = new Set<string>();
+  const parents = new Map<string, string | null>();
+  parents.set(`${from[0]}:${from[1]}`, null);
 
-  const queue = new BinaryHeap<string>(
-    (a, b) => distances.get(a)! - distances.get(b)!
-  );
-  queue.push(`${start[0]}:${start[1]}`);
-  // for (let y = 0; y < map.length; y++) {
-  //   for (let x = 0; x < map[y].length; x++) {
-  //     if (map[y][x] !== "#") {
-  //       queue.push(`${x}:${y}`);
-  //     }
-  //   }
-  // }
-
+  const queue: [number, number][] = [from];
   while (queue.length > 0) {
-    const current = queue.pop()!;
-
-    const [x, y] = current.split(":").map(Number);
-
-    const currentCost = distances.get(current)!;
-    console.log(x, y, currentCost);
-
+    const [x, y] = queue.shift()!;
+    if (x === to[x] && y === to[y]) {
+      break;
+    }
+    visited.add(`${x}:${y}`);
     for (const [dx, dy] of [
       [1, 0],
       [-1, 0],
@@ -43,52 +23,46 @@ function dijkstra(map: Cell[][], start: [number, number]) {
     ]) {
       const nx = x + dx;
       const ny = y + dy;
-      // Out of bounds
+
+      // Illegal - not within bounds
       if (nx < 0 || nx >= map[0].length || ny < 0 || ny >= map.length) {
         continue;
       }
+
       // Illegal - forest
       if (map[ny][nx] === "#") {
+        // console.log(nx, ny, "illegal - forest");
         continue;
       }
       // Illegal - not following slope
-      if (map[y][x] === ">" && dx !== 1) {
+      if (
+        (map[y][x] === ">" && dx !== 1) ||
+        (map[y][x] === "<" && dx !== -1) ||
+        (map[y][x] === "^" && dy !== -1) ||
+        (map[y][x] === "v" && dy !== 1)
+      ) {
+        // console.log(nx, ny, "illegal - not following slope");
         continue;
       }
-      if (map[y][x] === "<" && dx !== -1) {
-        continue;
-      }
-      if (map[y][x] === "v" && dy !== 1) {
-        continue;
-      }
-      if (map[y][x] === "^" && dy !== -1) {
-        continue;
-      }
-      // Illegal - upwards slope
-      if (map[ny][nx] === ">" && dx === -1) {
-        continue;
-      }
-      if (map[ny][nx] === "<" && dx === 1) {
-        continue;
-      }
-      if (map[ny][nx] === "v" && dy === -1) {
-        continue;
-      }
-      if (map[ny][nx] === "^" && dy === 1) {
+      // Illegal - up slope
+      if (
+        (map[ny][nx] === ">" && dx === -1) ||
+        (map[ny][nx] === "<" && dx === 1) ||
+        (map[ny][nx] === "^" && dy === 1) ||
+        (map[ny][nx] === "v" && dy === -1)
+      ) {
+        // console.log(nx, ny, "illegal - up slope");
         continue;
       }
 
-      const next = `${nx}:${ny}`;
-
-      const cost = currentCost + 1;
-      if (cost < distances.get(next)!) {
-        distances.set(next, cost);
-        // queue.push(next);
+      if (!visited.has(`${nx}:${ny}`)) {
+        queue.unshift([nx, ny]);
+        parents.set(`${nx}:${ny}`, `${x}:${y}`);
       }
     }
   }
 
-  return distances;
+  return parents;
 }
 
 export function solvePart1(input: Input): number {
@@ -100,8 +74,16 @@ export function solvePart1(input: Input): number {
     map.length - 1,
   ];
 
-  const distances = dijkstra(map, start);
-  console.log(distances);
+  const previous = dfs(map, start, goal);
 
-  return distances.get(`${goal[0]}:${goal[1]}`)!;
+  const path: [number, number][] = [];
+  let current: string | null = `${goal[0]}:${goal[1]}`;
+  while (current != null) {
+    path.push(current.split(":").map(Number) as [number, number]);
+    current = previous.get(current)!;
+  }
+
+  console.log(path.reverse());
+
+  return path.length;
 }
