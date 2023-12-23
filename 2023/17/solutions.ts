@@ -214,6 +214,9 @@ export function solvePart2(input: Input): number {
       }
     }
   }
+  // TODO: Try 4x skip tactic, but only use it for the path. Then extract the
+  // actual path and count the actual cost- not missing anything
+  // NOTE: Doesn't seem to work either...
 
   const goals: string[] = [];
   for (const shift of shifts) {
