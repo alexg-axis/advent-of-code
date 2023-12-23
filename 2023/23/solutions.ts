@@ -135,9 +135,7 @@ export function solvePart1(input: Input): number {
 }
 
 export function solvePart2(input: Input): number {
-  const map = input.lines.map(
-    (x) => x.split("").map((x) => x.replace(/[^#]/, ".")) as Cell[]
-  );
+  const map = input.lines.map((x) => x.split("") as Cell[]);
 
   const start: [number, number] = [map[0].indexOf("."), 0];
   const goal: [number, number] = [
@@ -184,10 +182,20 @@ export function solvePart2(input: Input): number {
     }
   }
 
+  const distances: Record<string, number> = {};
+  for (const [k, v] of graph.entries()) {
+    for (const n of v) {
+      distances[`${k}->${n}`] = 1;
+      distances[`${n}->${k}`] = 1;
+    }
+  }
+
   // Simplify all edges so that linear paths become a single edge
   for (const [k, v] of graph.entries()) {
     // Corridors have two nodes - one from, one next
     if (v.length === 2) {
+      const distance = distances[`${v[0]}->${k}`] + distances[`${k}->${v[1]}`];
+
       // Remove this node from the previous one
       graph.set(
         v[0],
@@ -195,6 +203,12 @@ export function solvePart2(input: Input): number {
       );
       // Add this nodes next node to the previous one
       graph.get(v[0])!.push(v[1]);
+      if (
+        !distances[`${v[0]}->${v[1]}`] ||
+        distances[`${v[0]}->${v[1]}`] < distance
+      ) {
+        distances[`${v[0]}->${v[1]}`] = distance;
+      }
 
       // Remove this node from the next one
       graph.set(
@@ -203,8 +217,17 @@ export function solvePart2(input: Input): number {
       );
       // Add this nodes previous node to the next one
       graph.get(v[1])!.push(v[0]);
+      if (
+        !distances[`${v[1]}->${v[0]}`] ||
+        distances[`${v[1]}->${v[0]}`] < distance
+      ) {
+        distances[`${v[1]}->${v[0]}`] = distance;
+      }
     }
   }
+
+  // TODO: Too low values for whatever reason, doesn't seem to chose the right
+  // path
 
   const [_, visited] = recurse2(
     graph,
@@ -215,14 +238,10 @@ export function solvePart2(input: Input): number {
   );
 
   let totalSteps = 0;
-  let V: string[] = [`${start[0]}:${start[1]}`];
   for (let i = 0; i < visited.length - 1; i++) {
-    const from = visited[i].split(":").map(Number) as [number, number];
-    const to = visited[i + 1].split(":").map(Number) as [number, number];
-    console.log(from, to);
-    const [steps, newV] = recurse(map, from, to, V, totalSteps);
-    V = newV;
-    totalSteps = steps;
+    console.log(visited[i], visited[i + 1]);
+    console.log(distances[`${visited[i]}->${visited[i + 1]}`]);
+    totalSteps += distances[`${visited[i]}->${visited[i + 1]}`];
   }
 
   return totalSteps;
