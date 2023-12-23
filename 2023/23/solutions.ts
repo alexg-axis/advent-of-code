@@ -3,66 +3,76 @@ import { Input } from "../../utils/deno/input.ts";
 // Path, forest, slopes
 type Cell = "." | "#" | "^" | "<" | ">" | "v";
 
-function dfs(map: Cell[][], from: [number, number], to: [number, number]) {
-  const visited = new Set<string>();
-  const parents = new Map<string, string | null>();
-  parents.set(`${from[0]}:${from[1]}`, null);
+function recurse(
+  map: Cell[][],
+  [x, y]: [number, number],
+  to: [number, number],
+  visited: string[],
+  steps: number
+): [number, string[]] {
+  if (x === to[0] && y === to[1]) {
+    return [steps, visited];
+  }
 
-  const queue: [number, number][] = [from];
-  while (queue.length > 0) {
-    const [x, y] = queue.shift()!;
-    if (x === to[x] && y === to[y]) {
-      break;
+  let bestVisited: string[] = [];
+  let bestSteps = 0;
+
+  for (const [dx, dy] of [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+  ]) {
+    const nx = x + dx;
+    const ny = y + dy;
+
+    // Illegal - not within bounds
+    if (nx < 0 || nx >= map[0].length || ny < 0 || ny >= map.length) {
+      continue;
     }
-    visited.add(`${x}:${y}`);
-    for (const [dx, dy] of [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-    ]) {
-      const nx = x + dx;
-      const ny = y + dy;
 
-      // Illegal - not within bounds
-      if (nx < 0 || nx >= map[0].length || ny < 0 || ny >= map.length) {
-        continue;
-      }
+    // Illegal - forest
+    if (map[ny][nx] === "#") {
+      // console.log(nx, ny, "illegal - forest");
+      continue;
+    }
+    // Illegal - not following slope
+    if (
+      (map[y][x] === ">" && dx !== 1) ||
+      (map[y][x] === "<" && dx !== -1) ||
+      (map[y][x] === "^" && dy !== -1) ||
+      (map[y][x] === "v" && dy !== 1)
+    ) {
+      // console.log(nx, ny, "illegal - not following slope");
+      continue;
+    }
+    // Illegal - up slope
+    if (
+      (map[ny][nx] === ">" && dx === -1) ||
+      (map[ny][nx] === "<" && dx === 1) ||
+      (map[ny][nx] === "^" && dy === 1) ||
+      (map[ny][nx] === "v" && dy === -1)
+    ) {
+      // console.log(nx, ny, "illegal - up slope");
+      continue;
+    }
 
-      // Illegal - forest
-      if (map[ny][nx] === "#") {
-        // console.log(nx, ny, "illegal - forest");
-        continue;
-      }
-      // Illegal - not following slope
-      if (
-        (map[y][x] === ">" && dx !== 1) ||
-        (map[y][x] === "<" && dx !== -1) ||
-        (map[y][x] === "^" && dy !== -1) ||
-        (map[y][x] === "v" && dy !== 1)
-      ) {
-        // console.log(nx, ny, "illegal - not following slope");
-        continue;
-      }
-      // Illegal - up slope
-      if (
-        (map[ny][nx] === ">" && dx === -1) ||
-        (map[ny][nx] === "<" && dx === 1) ||
-        (map[ny][nx] === "^" && dy === 1) ||
-        (map[ny][nx] === "v" && dy === -1)
-      ) {
-        // console.log(nx, ny, "illegal - up slope");
-        continue;
-      }
-
-      if (!visited.has(`${nx}:${ny}`)) {
-        queue.unshift([nx, ny]);
-        parents.set(`${nx}:${ny}`, `${x}:${y}`);
+    if (!visited.includes(`${nx}:${ny}`)) {
+      const [currentSteps, currentVisited] = recurse(
+        map,
+        [nx, ny],
+        to,
+        [...visited, `${nx}:${ny}`],
+        steps + 1
+      );
+      if (currentSteps > bestSteps) {
+        bestSteps = currentSteps;
+        bestVisited = currentVisited;
       }
     }
   }
 
-  return parents;
+  return [bestSteps, bestVisited];
 }
 
 export function solvePart1(input: Input): number {
@@ -74,16 +84,13 @@ export function solvePart1(input: Input): number {
     map.length - 1,
   ];
 
-  const previous = dfs(map, start, goal);
-
-  const path: [number, number][] = [];
-  let current: string | null = `${goal[0]}:${goal[1]}`;
-  while (current != null) {
-    path.push(current.split(":").map(Number) as [number, number]);
-    current = previous.get(current)!;
-  }
-
-  console.log(path.reverse());
-
-  return path.length;
+  const [steps, visited] = recurse(
+    map,
+    start,
+    goal,
+    [`${start[0]}:${start[1]}`],
+    0
+  );
+  console.log(visited);
+  return steps;
 }
