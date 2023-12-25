@@ -26,3 +26,10 @@ Deno.test("part 1 - input test case", () => {
 
   assertEquals(solvePart1(new Input(input)), 1);
 });
+
+Deno.test("part 1 - input test case", () => {
+  const input = `300501970298399, 314329447278049, 467279541164790 @ -32, 34, -91
+344037792517118, 276600737986546, 354154373719482 @ -80, 70, 20`;
+
+  assertEquals(solvePart1(new Input(input)), 1);
+});
